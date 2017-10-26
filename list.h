@@ -332,10 +332,10 @@
  * @param  idx2 the other index
  * @return      0 if succeeded else -1
  */
-#define list_swap(l, idx1, idx2) \
-  ( _list_swap( \
-      list_unstruct(l), \
-      list_safe_index((l), (idx1)), \
+#define list_swap(l, idx1, idx2)                                               \
+  ( _list_swap(                                                                \
+      list_unstruct(l),                                                        \
+      list_safe_index((l), (idx1)),                                            \
       list_safe_index((l), (idx2))) )
 
 /**
