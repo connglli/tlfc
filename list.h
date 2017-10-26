@@ -166,60 +166,95 @@
 	( sizeof(*(l)->head) )
 
 /**
+ * _list_is_index_valid checks the idx is valid or not
+ * @param  l   ptr to an list_t
+ * @param  idx idx to be checked
+ * @return     1 if valid else 0
+ */
+#define _list_is_index_valid(l, idx)                                           \
+	( 0 <= (idx) && (idx) < (l)->size ? 1 : 0 )
+
+/**
  * list_appendn appends a node to l
  * @param  l ptr to an list_t
  * @param  n ptr to the node to be appended
- * @return   idx of this node
+ * @return   last index
  */
 #define list_appendn(l, n)                                                     \
-	( (l)->size == 0 \
-		? ((l)->tail = (l)->head = (n), (l)->size ++)                              \
+	( (l)->size == 0                                                             \
+		? ((l)->tail = (l)->head = (n),                                            \
+			 (n)->next = (n)->prev = (n),                                            \
+			 (l)->size ++)                                                           \
 		: ((n)->next = (l)->head, (n)->prev = (l)->tail,                           \
 			 (l)->tail->next = (n), (l)->head->prev = (n),                           \
 			 (l)->tail = (n), (l)->size ++) )
-
-// The following commented codes can used when append does not need
-// any return value.
-//
-//
-// /**
-//  * _list_unsafe_appendn appends a node(usually of type void*) to l
-//  * @param  l ptr to an list_t
-//  * @param  n ptr to the node to be appended
-//  * @return   idx of this node
-//  */
-// #define _list_unsafe_appendn(l, n)                                             \
-// 	( (l)->size == 0                                                             \
-// 		? ((l)->tail = (l)->head = (n), (l)->size ++)                              \
-// 		: (*_list_node_unsafe_nextp(n) = (l)->head,                                \
-// 			 *_list_node_unsafe_prevp(n) = (l)->tail,                                \
-// 			 (l)->tail->next = (n), (l)->head->prev = (n),                           \
-// 			 (l)->tail = (n), (l)->size ++) )
-//
-// /**
-//  * list_append appends a value x to l
-//  * @param  l ptr to a list_t
-//  * @param  x value to be appended
-//  */
-// #define list_append(l, x)                                                      \
-// 	do {                                                                         \
-// 		void* n = _list_node_make(list_nodesz(l), &(x), sizeof(x));                \
-// 		_list_unsafe_appendn((l), n);                                              \
-// 	} while(0)
 
 /**
  * list_append appends a value x to l
  * @param  l ptr to a list_t
  * @param  x value to be appended
- * @return   idx of x
+ * @return   last index
  */
 #define list_append(l, x)                                                      \
 	( _list_unsafe_appendn(                                                      \
 			list_unstruct(l),                                                        \
 			_list_node_make(list_nodesz(l), &(x), sizeof(x))) )
 
+/**
+ * list_prependn prepends a node to l
+ * @param  l ptr to an list_t
+ * @param  n ptr to the node to be prepended
+ * @return   last index
+ */
+#define list_prependn(l, n)                                                    \
+	( (l)->size == 0                                                             \
+		? ((l)->tail = (l)->head = (n),                                            \
+			 (n)->next = (n)->prev = (n),                                            \
+			 (l)->size ++, (0))                                                      \
+		: ((n)->next = (l)->head, (n)->prev = (l)->tail,                           \
+			 (l)->tail->next = (n), (l)->head->prev = (n),                           \
+			 (l)->head = (n), (l)->size ++, (0)) )
+
+/**
+ * list_prepend prepends a value x to l
+ * @param  l ptr to a list_t
+ * @param  x value to be prepended
+ * @return   last index
+ */
+#define list_prepend(l, x)                                                     \
+	( _list_unsafe_prependn(                                                     \
+			list_unstruct(l),                                                        \
+			_list_node_make(list_nodesz(l), &(x), sizeof(x))) )
+
+/**
+ * list_insertn inserts a node to l at index idx
+ * @param  l   ptr to an list_t
+ * @param  idx index to be inserted
+ * @param  n   ptr to the node to be inserted
+ * @return     last index
+ */
+#define list_insertn(l, idx, n)                                                \
+	( _list_unsafe_insertn(list_unstruct(l), (idx), (n)) )
+
+/**
+ * list_insert inserts a value x to l at index idx
+ * @param  l   ptr to a list_t
+ * @param  idx index to be inserted
+ * @param  x   value to be inserted
+ * @return   last index
+ */
+#define list_insert(l, idx, x)                                                 \
+	( _list_unsafe_insertn(                                                      \
+			list_unstruct(l),                                                        \
+			(idx),                                                                   \
+			_list_node_make(list_nodesz(l), &(x), sizeof(x))) )
+
 void* _list_node_make(int nodesz, void* x, int xsize);
+int   _list_unsafe_insertn(char** head, char** tail, int* size, int nodesz,
+													 int idx, void* node);
 int   _list_unsafe_appendn(char** head, char** tail, int* size, int nodesz,
 													 void* node);
+int   _list_unsafe_prependn(char** head, char** tail, int* size, int nodesz,
+													  void* node);
 
 #endif
