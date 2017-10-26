@@ -175,6 +175,57 @@
   ( 0 <= (idx) && (idx) < (l)->size ? 1 : 0 )
 
 /**
+ * list_safe_index will crash the program if idx exceeds the size
+ * @param  l   ptr to a list_t
+ * @param  idx idx to be queried
+ * @return     idx if safe else crash the program
+ */
+#define list_safe_index(l, idx)                                                \
+  ( _list_is_index_valid((l), (idx)) ? (idx) : (assert(0), 0) )
+
+/**
+ * list_getn gets the idx-th node
+ * @param  l   ptr to an list_t
+ * @param  idx index to be queried, must be valid
+ * @param  n   place to put ptr to the idx-th node, must be of type list_node_t**
+ */
+#define list_getn(l, idx, n)                                                   \
+  do {                                                                         \
+    if (!_list_is_index_valid((l), (idx))) { assert(0); }                      \
+    *(n) = (l)->head;                                                          \
+    for(                                                                       \
+      int _i_d_x = 0;                                                          \
+      _i_d_x != (idx);                                                         \
+      _i_d_x ++, *(n) = *_list_node_unsafe_nextp(*(n)));                       \
+  } while(0)
+
+/**
+ * list_setn sets the idx-th node
+ * @param  l   ptr to an list_t
+ * @param  idx index to be queried, must be valid
+ * @param  n   ptr to the new node
+ */
+#define list_setn(l, idx, n)                                                   \
+  do {                                                                         \
+    if (!_list_is_index_valid((l), (idx))) { assert(0); }                      \
+    list_remove((l), (idx));                                                   \
+    list_insertn((l), (idx), (n));                                             \
+  } while(0)
+
+/**
+ * list_set sets the idx-th node
+ * @param  l   ptr to an list_t
+ * @param  idx index to be queried, must be valid
+ * @param  x   new value of idx-th node
+ */
+#define list_set(l, idx, x)                                                    \
+  do {                                                                         \
+    if (!_list_is_index_valid((l), (idx))) { assert(0); }                      \
+    list_remove((l), (idx));                                                   \
+    list_insert((l), (idx), (x));                                              \
+  } while(0)
+
+/**
  * list_appendn appends a node to l
  * @param  l ptr to an list_t
  * @param  n ptr to the node to be appended
@@ -231,7 +282,7 @@
  * @param  l   ptr to an list_t
  * @param  idx index to be inserted
  * @param  n   ptr to the node to be inserted
- * @return     last index
+ * @return     inserted index
  */
 #define list_insertn(l, idx, n)                                                \
   ( _list_unsafe_insertn(list_unstruct(l), (idx), (n)) )
@@ -241,13 +292,86 @@
  * @param  l   ptr to a list_t
  * @param  idx index to be inserted
  * @param  x   value to be inserted
- * @return   last index
+ * @return     inserted index
  */
 #define list_insert(l, idx, x)                                                 \
   ( _list_unsafe_insertn(                                                      \
       list_unstruct(l),                                                        \
       (idx),                                                                   \
       _list_node_make(list_nodesz(l), &(x), sizeof(x))) )
+
+/**
+ * list_remove removes node at index idx
+ * @param  l   ptr to a list_t
+ * @param  idx idx to be removed, if idx is invalid, nothing happended
+ */
+#define list_remove(l, idx)                                                    \
+  do {                                                                         \
+    if (!_list_is_index_valid((l), (idx))) { break; }                          \
+    if ((l)->size == 1) {                                                      \
+      list_node_deinit((l)->head);                                             \
+      list_init(l);                                                            \
+      break;                                                                   \
+    }                                                                          \
+    void *n = (l)->head, *prev, *next;                                         \
+    for (int i = 0; i != (idx); i ++) { n = *_list_node_unsafe_nextp(n); }     \
+    next = *_list_node_unsafe_nextp(n);                                        \
+    prev = *_list_node_unsafe_prevp(n);                                        \
+    *_list_node_unsafe_nextp(prev) = next;                                     \
+    *_list_node_unsafe_prevp(next) = prev;                                     \
+    if (idx == 0) { (l)->head = next; }                                        \
+    else if(idx == (l)->size - 1) { (l)->tail = prev; }                        \
+    list_node_deinit(n);                                                       \
+    (l)->size --;                                                              \
+  } while(0)
+
+/**
+ * list_swap swaps value in idx1 and idx2
+ * @param  l    ptr to a list_t
+ * @param  idx1 one index
+ * @param  idx2 the other index
+ * @return      0 if succeeded else -1
+ */
+#define list_swap(l, idx1, idx2) \
+  ( _list_swap( \
+      list_unstruct(l), \
+      list_safe_index((l), (idx1)), \
+      list_safe_index((l), (idx2))) )
+
+/**
+ * list_reverse reverses a list_t
+ * @param  l ptr to a list_t
+ */
+#define list_reverse(l)                                                        \
+  do {                                                                         \
+    if ((l)->size == 0 || (l)->size == 1) { break; }                           \
+    void *old_head = (l)->head->next, *ptr;                                    \
+    void *new_head = (l)->head, *new_tail = (l)->head;                         \
+    (l)->head->next = (l)->head->prev = new_head;                              \
+    while(old_head != (l)->head) {                                             \
+      ptr = old_head;                                                          \
+      old_head = *_list_node_unsafe_nextp(old_head);                           \
+      *_list_node_unsafe_prevp(ptr) = new_tail;                                \
+      *_list_node_unsafe_nextp(ptr) = new_head;                                \
+      *_list_node_unsafe_nextp(new_tail) = ptr;                                \
+      *_list_node_unsafe_prevp(new_head) = ptr;                                \
+      new_head = ptr;                                                          \
+    }                                                                          \
+    (l)->head = new_head;                                                      \
+    (l)->tail = new_tail;                                                      \
+  } while(0)
+
+/**
+ * list_foreach_n n indicates node
+ * @param  l ptr to a list_t
+ * @param  n ptr to node iterator
+ */
+#define list_foreach_n(l, n)                                                   \
+  for (                                                                        \
+    int _i_d_x = 0;                                                            \
+    (_i_d_x) < (l)->size &&                                                    \
+      (_i_d_x == 0 ? ((n) = (l)->head) : ((n) = (n)->next), 1);                \
+    (_i_d_x) ++ )
 
 /**
  * list_node_deinit frees a node
@@ -277,5 +401,7 @@ int   _list_unsafe_appendn(char** head, char** tail, int* size, int nodesz,
                            void* node);
 int   _list_unsafe_prependn(char** head, char** tail, int* size, int nodesz,
                             void* node);
+int   _list_swap(char** head, char** tail, int* size, int nodesz,
+                 int idx1, int idx2);
 
 #endif

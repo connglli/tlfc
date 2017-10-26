@@ -42,7 +42,7 @@ int _list_unsafe_appendn(char** head, char** tail, int* size, int nodesz,
  * @return        0
  */
 int _list_unsafe_prependn(char** head, char** tail, int* size, int nodesz,
-                         void* node) {
+                          void* node) {
   return _list_unsafe_insertn(head, tail, size, nodesz, -1, node);
 }
 
@@ -99,4 +99,39 @@ int _list_unsafe_insertn(char** head, char** tail, int* size, int nodesz,
   (*size) ++;
 
   return inserted_idx;
+}
+
+/**
+ * _list_swap swaps value in idx1 and idx2
+ * @param  head   ptr to list head
+ * @param  tail   ptr to list tail
+ * @param  size   ptr to list size
+ * @param  nodesz node size of this list
+ * @param  idx1   one index
+ * @param  idx2   the other index
+ * @return        0 if succeeded else -1
+ */
+int _list_swap(char** head, char** tail, int* size, int nodesz,
+               int idx1, int idx2) {
+  if (idx1 == idx2) { return 0; }
+
+  int xsize = nodesz - 2 * sizeof(void*);
+  int min_idx = idx1 < idx2 ? idx1 : idx2;
+  int max_idx = idx1 < idx2 ? idx2 : idx1;
+  void *min_ptr, *max_ptr, *n = *head;
+  void *buf = (void*)malloc(xsize);
+  if (buf == NULL) { return -1; }
+
+  for (int i = 0; i < *size; i ++, n = *_list_node_unsafe_nextp(n)) {
+    if (i == min_idx) { min_ptr = _list_node_unsafe_datap(n); }
+    else if (i == max_idx) { max_ptr = _list_node_unsafe_datap(n); break; }
+  }
+
+  memcpy(buf, min_ptr, xsize);
+  memcpy(min_ptr, max_ptr, xsize);
+  memcpy(max_ptr, buf, xsize);
+
+  free(buf);
+
+  return 0;
 }
