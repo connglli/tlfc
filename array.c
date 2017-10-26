@@ -9,15 +9,15 @@
  * @return          0 for success, and -1 for failed
  */
 int _array_force_expand(char** data, int* size, int* capacity, int itemsz) {
-	void* ptr;
-	int n;
+  void* ptr;
+  int n;
 
-	n = (*capacity == 0) ? 1 : (*capacity << 1);
-	ptr = realloc(*data, n * itemsz);
-	if (ptr == NULL) { return -1; }
-	else { *data = ptr; *capacity = n; }
+  n = (*capacity == 0) ? 1 : (*capacity << 1);
+  ptr = realloc(*data, n * itemsz);
+  if (ptr == NULL) { return -1; }
+  else { *data = ptr; *capacity = n; }
 
-	return 0;
+  return 0;
 }
 
 /**
@@ -29,8 +29,8 @@ int _array_force_expand(char** data, int* size, int* capacity, int itemsz) {
  * @return          0 for success, and -1 for failed
  */
 int _array_expand(char** data, int* size, int* capacity, int itemsz) {
-	if (*size < *capacity) { return 0; }
-	return _array_force_expand(data, size, capacity, itemsz);
+  if (*size < *capacity) { return 0; }
+  return _array_force_expand(data, size, capacity, itemsz);
 }
 
 /**
@@ -42,25 +42,25 @@ int _array_expand(char** data, int* size, int* capacity, int itemsz) {
  * @return          0 for success, and -1 for failed
  */
 int _array_reverse(char** data, int* size, int* capacity, int itemsz) {
-	if (*size == 0 || *size == 1) { return 0; }
+  if (*size == 0 || *size == 1) { return 0; }
 
-	void* buf = malloc(itemsz);
-	if (buf == NULL) { return -1; }
-	void* head_ptr = *data;
-	void* tail_ptr = *data + (*size - 1) * itemsz;
-	int half = *size / 2;
+  void* buf = malloc(itemsz);
+  if (buf == NULL) { return -1; }
+  void* head_ptr = *data;
+  void* tail_ptr = *data + (*size - 1) * itemsz;
+  int half = *size / 2;
 
-	while(head_ptr < tail_ptr) {
-		memmove(buf, head_ptr, itemsz);
-		memmove(head_ptr, tail_ptr, itemsz);
-		memmove(tail_ptr, buf, itemsz);
-		head_ptr += itemsz;
-		tail_ptr -= itemsz;
-	}
+  while(head_ptr < tail_ptr) {
+    memmove(buf, head_ptr, itemsz);
+    memmove(head_ptr, tail_ptr, itemsz);
+    memmove(tail_ptr, buf, itemsz);
+    head_ptr += itemsz;
+    tail_ptr -= itemsz;
+  }
 
-	free(buf);
+  free(buf);
 
-	return 0;
+  return 0;
 }
 
 /**
@@ -74,21 +74,21 @@ int _array_reverse(char** data, int* size, int* capacity, int itemsz) {
  * @return          0 for success, and -1 for failed
  */
 int _array_swap(char** data, int* size, int* capacity, int itemsz,
-									 int idx1, int idx2) {
-	if (idx1 == idx2) { return 0; }
+                   int idx1, int idx2) {
+  if (idx1 == idx2) { return 0; }
 
-	void* buf = malloc(itemsz);
-	if (buf == NULL) { return -1; }
-	void* ptr1 = *data + idx1 * itemsz;
-	void* ptr2 = *data + idx2 * itemsz;
+  void* buf = malloc(itemsz);
+  if (buf == NULL) { return -1; }
+  void* ptr1 = *data + idx1 * itemsz;
+  void* ptr2 = *data + idx2 * itemsz;
 
-	memmove(buf, ptr1, itemsz);
-	memmove(ptr1, ptr2, itemsz);
-	memmove(ptr2, buf, itemsz);
+  memmove(buf, ptr1, itemsz);
+  memmove(ptr1, ptr2, itemsz);
+  memmove(ptr2, buf, itemsz);
 
-	free(buf);
+  free(buf);
 
-	return 0;
+  return 0;
 }
 
 /**
@@ -107,22 +107,22 @@ int _array_swap(char** data, int* size, int* capacity, int itemsz,
  * @return          0 for success, and -1 for failed
  */
 int _array_move(char** data, int* size, int* capacity, int itemsz, 
-								int from_idx, int to_idx) {
-	if (from_idx == to_idx) { return 1; }
+                int from_idx, int to_idx) {
+  if (from_idx == to_idx) { return 1; }
 
-	if (to_idx - from_idx + size >= capacity) {
-		if(_array_force_expand(data, size, capacity, itemsz) == -1) {
-			return -1;
-		}
-	}
-	
-	void* from_ptr = *data + from_idx * itemsz;
-	void* to_ptr = *data + to_idx * itemsz;
-	int memsz = (*size - from_idx) * itemsz;
+  if (to_idx - from_idx + size >= capacity) {
+    if(_array_force_expand(data, size, capacity, itemsz) == -1) {
+      return -1;
+    }
+  }
+  
+  void* from_ptr = *data + from_idx * itemsz;
+  void* to_ptr = *data + to_idx * itemsz;
+  int memsz = (*size - from_idx) * itemsz;
 
-	memmove(to_ptr, from_ptr, memsz);
-	if (from_ptr < to_ptr) { memset(from_ptr, 0, (int)(to_ptr - from_ptr)); }
-	*size += (to_idx - from_idx);
+  memmove(to_ptr, from_ptr, memsz);
+  if (from_ptr < to_ptr) { memset(from_ptr, 0, (int)(to_ptr - from_ptr)); }
+  *size += (to_idx - from_idx);
 
-	return 0;
+  return 0;
 }
