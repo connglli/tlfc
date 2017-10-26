@@ -1,4 +1,5 @@
 #include "array.h"
+
 /**
  * _array_force_expand reallocs the memory ignoring size and capacity
  * @param  data     ptr to the memory
