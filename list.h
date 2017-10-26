@@ -249,6 +249,27 @@
 			(idx),                                                                   \
 			_list_node_make(list_nodesz(l), &(x), sizeof(x))) )
 
+/**
+ * list_node_deinit frees a node
+ * @param  n ptr to the node to be freed
+ */
+#define list_node_deinit(n)                                                    \
+	do { free(n); } while(0)
+
+/**
+ * list_deinit destroys a list_t
+ * @param  l ptr to a list_t
+ */
+#define list_deinit(l)                                                         \
+	do {                                                                         \
+		void* p = (l)->head;                                                       \
+		for(int i = 0; i < (l)->size; i ++) {                                      \
+			p = *_list_node_unsafe_nextp(p);                                         \
+			list_node_deinit(*_list_node_unsafe_prevp(p));                           \
+		}                                                                          \
+		list_init(l);                                                              \
+	} while(0)
+
 void* _list_node_make(int nodesz, void* x, int xsize);
 int   _list_unsafe_insertn(char** head, char** tail, int* size, int nodesz,
 													 int idx, void* node);

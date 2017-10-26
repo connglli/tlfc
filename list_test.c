@@ -9,7 +9,7 @@ int main() {
 	list_init(&l);
 	list_node_int_t *n, *p;
 	void* v;
-	int s;
+	int i, s;
 
 	for(int i = 0; i < 5; i ++) {
 		list_append(&l, i);
@@ -82,6 +82,8 @@ int main() {
 			assert(p->data == i - 4);
 		}
 	}
+
+	list_deinit(&l);
 
 	return 0;
 }
