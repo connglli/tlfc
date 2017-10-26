@@ -6,20 +6,13 @@ This is a tiny lib for c, implemented easily.
 
 This lib includes some data structures as well as some easy but often used functions
 
-+ [ ] dynamic array - array.h
-+ [x] linked list   - list.h
-+ [x] pool          - pool.h
-+ [x] hash map      - map.h
-+ [x] string funcs  - strings.h
-+ [x] logger funcs  - logger.h
-+ [x] debug funcs   - debug.h
-
-## data structures
-
-+ array_t
-+ list_t
-+ pool_t
-+ map_t
++ [x] dynamic array - array.h
++ [ ] linked list   - list.h
++ [ ] pool          - pool.h
++ [ ] hash map      - map.h
++ [ ] string funcs  - strings.h
++ [ ] logger funcs  - logger.h
++ [ ] debug funcs   - debug.h
 
 ## api intro
 
