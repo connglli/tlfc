@@ -6,6 +6,19 @@
 #include <assert.h>
 
 /**
+ * array_template declares an array_t
+ * @param  T             type to be declared
+ * @param  array_alias_t type name alias
+ * @return               a wrapped struct
+ */
+#define array_template(T, array_alias_t)                                       \
+	typedef struct array_alias_t {                                               \
+		T*  data;                                                                  \
+		int size;                                                                  \
+		int capacity;                                                              \
+	} array_alias_t;
+
+/**
  * array_struct declares an array_t
  * @param  T type to be declared
  * @return   a wrapped struct
@@ -20,6 +33,13 @@
  */
 #define array_unstruct(a)                                                      \
 	((char**)(&(a)->data)), (&(a)->size), (&(a)->capacity), (sizeof(*(a)->data))
+
+/**
+ * make_array makes an array for any array_t
+ * @return an array_t
+ */
+#define make_array() \
+	{ NULL, 0, 0 }
 
 /**
  * array_init initialize an array_t

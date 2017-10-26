@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include "array.h"
 
+array_template(long, array_long_t);
 typedef array_struct(int) array_int_t;
 
-int f(int i) {
-	return 2 * i;
+long f(int i) {
+	return (long)(2 * i);
 }
 
 int ff(int i, int j) {
@@ -84,8 +85,7 @@ void test_array_int_t() {
 		assert(v == i ++);
 	}
 
-	array_int_t ml;
-	array_init(&ml);
+	array_long_t ml = make_array();
 
 	array_map(&l, &ml, f);
 	for (int i = 0; i < array_size(&ml); i ++) {
