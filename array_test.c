@@ -41,6 +41,14 @@ void test_array_int_t() {
 	assert(array_get(&l, s) == 102);
 	assert(array_get(&l, s + 1) == 101);
 
+	array_insert(&l, s + 1, 100);
+	assert(array_get(&l, s + 1) == 100);
+	assert(array_get(&l, s + 2) == 101);
+	assert(array_size(&l) == s + 3);
+
+	array_remove(&l, s + 2);
+	assert(array_size(&l) == s + 2);
+
 	array_remove(&l, s + 1);
 	assert(array_size(&l) == s + 1);
 
@@ -87,6 +95,12 @@ void test_array_int_t() {
 	int sum;
 	array_reduce(&l, &sum, 0, ff);
 	assert(sum == 45);
+
+	array_prepend(&l, 1234);
+	assert(array_get(&l, 0) == 1234);
+	for (int i = 1; i < array_size(&l); i ++) {
+		assert(array_get(&l, i) == i - 1);
+	}
 
 	array_deinit(&l);
 }

@@ -48,22 +48,22 @@
 
 /**
  * array_move safely moves array items from from_idx to to_idx, 
+ * from_idx and to_idx must be valid, or the program will be crashed,
  * if from_idx is same as to_idx, 
  *   nothing will happen,
  * if from_idx is less than to_idx, size will be automatically increased, 
  *   and all in them are set to 0
  * or decreased.
  * @param  a        ptr to an array_t
- * @param  from_idx index of start point
- * @param  to_idx   index of end point
+ * @param  from_idx index of start point, must be valid
+ * @param  to_idx   index of end point, must be valid
+ * @return          0 if succeed else -1
  */
 #define array_move(a, from_idx, to_idx)                                        \
-	do {                                                                         \
-		_array_move(                                                               \
+	( _array_move(                                                               \
 			array_unstruct(a),                                                       \
 			array_safe_index((a), (from_idx)),                                       \
-			array_safe_index((a), (to_idx)));                                        \
-	} while(0)
+			array_safe_index((a), (to_idx))) )
 
 /**
  * array_size returns size of an array_t
@@ -82,55 +82,76 @@
 	( (a)->capacity )
 
 /**
- * array_get gets the idx-th item
+ * array_get safely gets the idx-th item
  * @param  a   ptr to an array_t
- * @param  idx idx to be quried
+ * @param  idx idx to be quried, must be valid
  * @return     idx-th item if safe else crash the program
  */
 #define array_get(a, idx)                                                      \
 	( (a)->data[array_safe_index((a), (idx))] )
 
 /**
- * array_set gets the idx-th item
+ * array_set safely sets the idx-th item
  * @param  a   ptr to an array_t
- * @param  idx idx to be quried
+ * @param  idx idx to be quried, must be valid
  * @param  x   item to be set
+ * @return     idx if succeeded else crash the program
  */
 #define array_set(a, idx, x)                                                   \
-	do { (a)->data[array_safe_index((a), (idx))] = (x); } while(0)
+	( (a)->data[array_safe_index((a), (idx))] = (x), (idx) )
 
 /**
  * array_append appends an item to array
  * @param  a ptr to an array_t
  * @param  x item to be appended
- * @return   size if succeeded else 0
+ * @return   size of the array
  */
 #define array_append(a, x)                                                     \
 	( (_array_expand(array_unstruct(a)) == 0)                                    \
-		? ((a)->data[(a)->size ++] = x, (a)->size)                                 \
-		: (0) )
+		? ((a)->data[(a)->size ++] = (x), (a)->size)                               \
+		: (a)->size )
 
 /**
- * array_insert insert an item to index idx, and all items from idx
+ * array_insert safely insert an item to index idx, and all items from idx
  * are moved to its next position
  * @param  a   ptr to an array_t
- * @param  idx idx to be inserted
+ * @param  idx idx to be inserted, must be valid
  * @param  x   item to be inserted
+ * @return     idx if succeeded else -1
  */
 #define array_insert(a, idx, x)                                                \
-	do {                                                                         \
-		array_move((a), (idx), (idx) + 1);                                         \
-		array_set((a), (idx), (x));                                                \
-	} while(0)
+	( ((idx) == (a)->size - 1)                                                   \
+		? ((_array_expand(array_unstruct(a)) != 0)                                 \
+			? (-1)                                                                   \
+			: ((a)->data[(idx) + 1] = (a)->data[(idx)],                              \
+				 (a)->data[(idx)] = (x),                                               \
+				 (a)->size ++,                                                         \
+				 (idx)))                                                               \
+		: (array_move((a), (idx), (idx) + 1), array_set((a), (idx), (x)), (idx)) )
+
+/**
+ * array_prepend prepends an item to array
+ * @param  a ptr to an array_t
+ * @param  x item to be appended
+ * @return   0 if succeeded else -1
+ */
+#define array_prepend(a, x)                                                    \
+	( ((a)->size == 0)                                                          \
+		? ((_array_expand(array_unstruct(a)) == 0)                                 \
+			? ((a)->data[(a)->size ++] = (x), (0))                                   \
+			: (-1))                                                                  \
+		: (array_insert((a), 0, (x))))
 
 /**
  * array_remove removes item at index idx
  * @param  a   ptr to an array_t
- * @param  idx idx to be removed
+ * @param  idx idx to be removed, if idx is invalid, nothing happended
  */
 #define array_remove(a, idx)                                                   \
 	do {                                                                         \
-		if (idx == (a)->size - 1) {                                                \
+		if ((idx) >= (a)->size) {                                                  \
+			break;                                                                   \
+		} else if ((idx) == (a)->size - 1) {                                       \
 			(a)->size --;                                                            \
 		} else {                                                                   \
 			array_move((a), (idx) + 1, (idx));                                       \

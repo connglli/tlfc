@@ -32,6 +32,8 @@ The api of tlfc is all the same among these data structures:
 + `xxx_remove`: remove data/nodes of a data structure, e.g. `list_remove`
 + `xxx_deinit`: destroy a data structure, e.g. `list_deinit`
 
+In almost all api, if your access is invalid, the program will crash.
+
 ## ref
 
 + [rxi/vec](https://github.com/rxi/vec)
