@@ -7,24 +7,24 @@
 
 /**
  * list_template declares a list_t and a list_node_t
- * @param  T                 type to be declared
- * @param  list_alias_t      type name alias of list
- * @param  list_node_alias_t type name alias of list node
- * @return                   a wrapped struct
+ * @param  T           type to be declared
+ * @param  list_t      type name alias of list
+ * @param  list_node_t type name alias of list node
+ * @return             a wrapped struct
  */
-#define list_template(T, list_alias_t, list_node_alias_t)                      \
-  typedef struct list_node_alias_t list_node_alias_t;                          \
-  typedef struct list_alias_t      list_alias_t;                               \
-  /* list type */                                                              \
-  struct list_node_alias_t {                                                   \
-    list_node_alias_t *prev, *next;                                            \
-    T                  data;                                                   \
+#define list_template(T, list_t, list_node_t)                                  \
+  typedef struct list_node_t list_node_t;                                      \
+  typedef struct list_t      list_t;                                           \
+  /* list type, we name it list_t in the folowing */                           \
+  struct list_node_t {                                                         \
+    list_node_t *prev, *next;                                                  \
+    T            data;                                                         \
   };                                                                           \
-  /* list node type */                                                         \
-  struct list_alias_t {                                                        \
-    list_node_alias_t *head;                                                   \
-    list_node_alias_t *tail;                                                   \
-    int                size;                                                   \
+  /* list node type, we name it list_t in the folowing */                      \
+  struct list_t {                                                              \
+    list_node_t *head;                                                         \
+    list_node_t *tail;                                                         \
+    int          size;                                                         \
   };
 
 /**

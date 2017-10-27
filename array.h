@@ -7,16 +7,17 @@
 
 /**
  * array_template declares an array_t
- * @param  T             type to be declared
- * @param  array_alias_t type name alias
- * @return               a wrapped struct
+ * @param  T       type to be declared
+ * @param  array_t type name alias
+ * @return         a wrapped struct
  */
-#define array_template(T, array_alias_t)                                       \
-  typedef struct array_alias_t {                                               \
-    T*  data;                                                                  \
-    int size;                                                                  \
-    int capacity;                                                              \
-  } array_alias_t;
+#define array_template(T, array_t)                                             \
+  /* array type, we name it array_t in the folowing */                         \
+  typedef struct array_t {                                                     \
+    T   *data;                                                                 \
+    int  size;                                                                 \
+    int  capacity;                                                             \
+  } array_t;
 
 /**
  * array_struct declares an array_t
