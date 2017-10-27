@@ -21,6 +21,9 @@
 #define POOL_FISH_STATE_ZOMBIE 2
 #define POOL_FISH_STATE_DEAD   3
 
+/**
+ * pool_fish_t is the handler of a fish in pool
+ */
 typedef int pool_fish_t;
 
 /**
@@ -129,7 +132,7 @@ typedef int pool_fish_t;
   ( pool_is_fish_in_pool((p), (fish)) ? (fish) : (assert(0), 0) )
 
 /**
- * [pool_fish_state returns state of a pool_fish_t
+ * pool_fish_state returns state of a pool_fish_t
  * @param  p    ptr to a pool_t
  * @param  fish pool_fish_t to be checked state
  * @return      state of this pool_fish_t

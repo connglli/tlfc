@@ -10,7 +10,7 @@ This lib includes some data structures as well as some easy but often used funct
 + [x] linked list   - list.h
 + [x] pool          - pool.h
 + [ ] hash map      - map.h
-+ [x] string utils  - strings.h
++ [x] string utils  - strutil.h
 + [x] logger utils  - logger.h
 + [x] debug utils   - debug.h
 
