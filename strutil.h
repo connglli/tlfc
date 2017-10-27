@@ -7,6 +7,7 @@
 
 char*  strdup(const char* s);
 char*  strndup(const char* s, size_t l);
+char*  strrpt(const char* s, int n);
 int    strsts(const char* s, const char* ss);
 int    streds(const char* s, const char* ss);
 int    strrvs(char* s);

@@ -6,8 +6,9 @@
  * @return   a duplicate of s, remember to free it
  */
 char* strdup(const char* s) {
+  if (NULL == s) { return NULL; }
   size_t l = strlen(s);
-  char *ds = (char*) malloc((l + 1) * sizeof(char));
+  char *ds = (char*)malloc((l + 1) * sizeof(char));
   strcpy(ds, s); ds[l] = '\0';
   return ds;
 }
@@ -19,9 +20,25 @@ char* strdup(const char* s) {
  * @return   a duplicate of s, remember to free it
  */
 char* strndup(const char* s, size_t n) {
-  char* ds = (char*) malloc((n + 1) * sizeof(char));
+  if (NULL == s) { return NULL; }
+  char* ds = (char*)malloc((n + 1) * sizeof(char));
   strncpy(ds, s, n); ds[n] = '\0';
   return ds;
+}
+
+/**
+ * strrpt returns a string who repeats s for n times
+ * @param  s string you want to be repeated
+ * @param  n times to repeat
+ * @return   a repeated string of s, remember to free it
+ */
+char* strrpt(const char* s, int n) {
+  if (NULL == s) { return NULL; }
+  size_t ls = strlen(s), lrs = n * ls;
+  char* rs = (char*)malloc((lrs + 1) * sizeof(char));
+  for (int i = 0; i < n; i ++) { memcpy(rs + i * ls, s, ls); }
+  rs[lrs] = '\0';
+  return rs;
 }
 
 /**

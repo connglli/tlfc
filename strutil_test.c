@@ -8,6 +8,7 @@ int main() {
   char* a = "you have to learn Chinese, Math, English well";
   char* b = "Chinese, Math, English,, ,Physics,";
   char c[11] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '\0' };
+  char* d = "12\n";
 
   char* dup_s  = strdup(s);
   char* dup_a  = strdup(a);
@@ -20,6 +21,13 @@ int main() {
   char* ndup_a = strndup(a, 7);
   assert(strncmp(s, ndup_s, 7) == 0);
   assert(strncmp(a, ndup_a, 7) == 0);
+
+  char* rpt_d1 = strrpt(d, 1);
+  assert(strcmp(rpt_d1, "12\n") == 0);
+  char* rpt_d2 = strrpt(d, 2);
+  assert(strcmp(rpt_d2, "12\n12\n") == 0);
+  char* rpt_d5 = strrpt(d, 5);
+  assert(strcmp(rpt_d5, "12\n12\n12\n12\n12\n") == 0);
 
   assert(strsts("123", "1234") == 0);
   assert(strsts("123", "1") == 1);
@@ -110,6 +118,7 @@ int main() {
   free(dup_s);      free(dup_a);
   free(dup_sl);     free(dup_sr);
   free(ndup_s);     free(ndup_a);
+  free(rpt_d1);     free(rpt_d2);    free(rpt_d5);
   free(tokens_ax);  free(tokens_a);  free(tokens_b);
   free(joined_ax);  free(joined_a);
   free(tokens_nax); free(tokens_na); free(tokens_nb);
