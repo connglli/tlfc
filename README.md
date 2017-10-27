@@ -6,10 +6,10 @@ This is a tiny lib for c, implemented easily.
 
 This lib includes some data structures as well as some easy but often used functions
 
-+ [x] dynamic array - array.h
-+ [x] linked list   - list.h
-+ [ ] pool          - pool.h
-+ [ ] hash map      - map.h
++ [x] dynamic array - array.h, let's say `array_t`
++ [x] linked list   - list.h, let's say `list_t`
++ [x] pool          - pool.h, let's say `pool_t`
++ [ ] hash map      - map.h, let's say `map_t`
 + [ ] string funcs  - strings.h
 + [x] logger funcs  - logger.h
 + [x] debug funcs   - debug.h
@@ -18,7 +18,7 @@ This lib includes some data structures as well as some easy but often used funct
 
 The api of tlfc is all the same among these data structures:
 
-+ `make_xxx`: create/alloc and then initialize a data structure, e.g. `make_array`, usually used as `array_int_t a = make_array()`
++ `make_xxx`: create/alloc and then initialize a data structure, e.g. `make_array`, usually used as `array_int_t a = make_array()`, but some may not have `make` method, e.g. `pool_t`
 + `xxx_init`: initialize a data structure, e.g. `list_init`, usually used as `array_int_t a; array_init(&a)`
 + `xxx_get`: get data/nodes of a data structure, e.g. `array_get`
 + `xxx_set`: set data/nodes of a data structure, e.g. `array_set`
