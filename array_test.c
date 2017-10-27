@@ -80,6 +80,24 @@ void test_array_int_t() {
     assert(array_get(&l, i) == i);
   }
 
+  assert(array_size(&l) == 10);
+  assert(array_capacity(&l) == 16);
+  array_shrink_to_fit(&l);
+  assert(array_size(&l) == 10);
+  assert(array_capacity(&l) == 10);
+
+  array_expand_to_cap(&l, 7);
+  assert(array_size(&l) == 10);
+  assert(array_capacity(&l) == 10);
+
+  array_expand_to_cap(&l, 10);
+  assert(array_size(&l) == 10);
+  assert(array_capacity(&l) == 10);
+
+  array_expand_to_cap(&l, 12);
+  assert(array_size(&l) == 10);
+  assert(array_capacity(&l) == 12);
+
   int v, i = 0;
   array_foreach_v(&l, v) {
     assert(v == i ++);

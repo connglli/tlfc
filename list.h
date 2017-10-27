@@ -54,7 +54,7 @@
   { NULL, NULL, 0 }
 
 /**
- * [list_node_init initializes a node
+ * list_node_init initializes a node
  * @param  n ptr to a list_node_t
  * @param  x value to be added
  */
@@ -62,7 +62,7 @@
   do { (n)->prev = (n)->next = n; (n)->data = (x); } while(0)
 
 /**
- * [list_init initializes a list
+ * list_init initializes a list
  * @param  l ptr to a list_t
  */
 #define list_init(l)                                                           \
@@ -94,7 +94,7 @@
   ( (void**)(n) )
 
 /**
- * _list_node_unsafe_next gets next(of type void*) from n(usually void*)
+ * _list_node_unsafe_nextp gets next(of type void*) from n(usually void*)
  * @param  n ptr to a list_node_t
  * @return   ptr to next of n, of type void**
  */
@@ -166,12 +166,12 @@
   ( sizeof(*(l)->head) )
 
 /**
- * _list_is_index_valid checks the idx is valid or not
+ * list_is_index_valid checks the idx is valid or not
  * @param  l   ptr to an list_t
  * @param  idx idx to be checked
  * @return     1 if valid else 0
  */
-#define _list_is_index_valid(l, idx)                                           \
+#define list_is_index_valid(l, idx)                                            \
   ( 0 <= (idx) && (idx) < (l)->size ? 1 : 0 )
 
 /**
@@ -181,7 +181,7 @@
  * @return     idx if safe else crash the program
  */
 #define list_safe_index(l, idx)                                                \
-  ( _list_is_index_valid((l), (idx)) ? (idx) : (assert(0), 0) )
+  ( list_is_index_valid((l), (idx)) ? (idx) : (assert(0), 0) )
 
 /**
  * list_getn gets the idx-th node
@@ -191,7 +191,7 @@
  */
 #define list_getn(l, idx, n)                                                   \
   do {                                                                         \
-    if (!_list_is_index_valid((l), (idx))) { assert(0); }                      \
+    if (!list_is_index_valid((l), (idx))) { assert(0); }                       \
     *(n) = (l)->head;                                                          \
     for(                                                                       \
       int _i_d_x = 0;                                                          \
@@ -207,7 +207,7 @@
  */
 #define list_setn(l, idx, n)                                                   \
   do {                                                                         \
-    if (!_list_is_index_valid((l), (idx))) { assert(0); }                      \
+    if (!list_is_index_valid((l), (idx))) { assert(0); }                       \
     list_remove((l), (idx));                                                   \
     list_insertn((l), (idx), (n));                                             \
   } while(0)
@@ -220,7 +220,7 @@
  */
 #define list_set(l, idx, x)                                                    \
   do {                                                                         \
-    if (!_list_is_index_valid((l), (idx))) { assert(0); }                      \
+    if (!list_is_index_valid((l), (idx))) { assert(0); }                      \
     list_remove((l), (idx));                                                   \
     list_insert((l), (idx), (x));                                              \
   } while(0)
@@ -307,7 +307,7 @@
  */
 #define list_remove(l, idx)                                                    \
   do {                                                                         \
-    if (!_list_is_index_valid((l), (idx))) { break; }                          \
+    if (!list_is_index_valid((l), (idx))) { break; }                           \
     if ((l)->size == 1) {                                                      \
       list_node_deinit((l)->head);                                             \
       list_init(l);                                                            \

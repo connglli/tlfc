@@ -49,12 +49,12 @@
   do { memset((a), 0, sizeof(*(a))); } while(0)
 
 /**
- * _array_is_index_valid checks the idx is valid or not
+ * array_is_index_valid checks the idx is valid or not
  * @param  a   ptr to an array_t
  * @param  idx idx to be checked
  * @return     1 if valid else 0
  */
-#define _array_is_index_valid(a, idx)                                          \
+#define array_is_index_valid(a, idx)                                           \
   ( 0 <= (idx) && (idx) < (a)->size ? 1 : 0 )
 
 /**
@@ -64,7 +64,7 @@
  * @return     idx if safe else crash the program
  */
 #define array_safe_index(a, idx)                                               \
-  ( _array_is_index_valid((a), (idx)) ? (idx) : (assert(0), 0) )
+  ( array_is_index_valid((a), (idx)) ? (idx) : (assert(0), 0) )
 
 /**
  * array_move safely moves array items from from_idx to to_idx, 
@@ -160,7 +160,7 @@
     ? ((_array_expand(array_unstruct(a)) == 0)                                 \
       ? ((a)->data[(a)->size ++] = (x), (0))                                   \
       : (-1))                                                                  \
-    : (array_insert((a), 0, (x))))
+    : (array_insert((a), 0, (x))) )
 
 /**
  * array_remove removes item at index idx
@@ -198,6 +198,26 @@
  */
 #define array_reverse(a)                                                       \
   do { _array_reverse(array_unstruct(a)); } while(0)
+
+/**
+ * array_shrink_to_fit shrinks to fit its capacity with its size
+ * @param  a ptr to an array_t
+ * @return   0 if succeeded else -1
+ */
+#define array_shrink_to_fit(a)                                                 \
+  ( _array_shrink_to_fit(array_unstruct(a)) )
+
+/**
+ * array_expand_to_cap expands this array to capacity cap,
+ * if size is greater than cap, then the program will crash,
+ * if capacity is already greater than or equal to cap, then nothing happened,
+ * else expand array to capacity cap
+ * @param  a   ptr to an array_t
+ * @param  cap capacity to be expanded to
+ * @return     0 if succeeded else -1
+ */
+#define array_expand_to_cap(a, cap)                                            \
+  ( _array_expand_to_cap(array_unstruct(a), (cap)) )
 
 /**
  * array_foreach_i i indicates index
@@ -238,7 +258,7 @@
 #define array_map(a, ma, f)                                                    \
   do {                                                                         \
     for (int i = 0; i < (a)->size; i ++) {                                     \
-      if (_array_is_index_valid((ma), i)) {                                    \
+      if (array_is_index_valid((ma), i)) {                                     \
         array_set((ma), i, f((a)->data[i]));                                   \
       } else {                                                                 \
         array_append((ma), f((a)->data[i]));                                   \
@@ -268,9 +288,11 @@
 #define array_deinit(a)                                                        \
   do { free((a)->data); array_init((a)); } while(0)
 
+int _array_expand_to_cap(char** data, int* size, int* capacity, int itemsz, int cap);
 int _array_expand(char** data, int* size, int* capacity, int itemsz);
 int _array_force_expand(char** data, int* size, int* capacity, int itemsz);
 int _array_reverse(char** data, int* size, int* capacity, int itemsz);
+int _array_shrink_to_fit(char** data, int* size, int* capacity, int itemsz);
 int _array_swap(char** data, int* size, int* capacity, int itemsz, 
                 int idx1, int idx2);
 int _array_move(char** data, int* size, int* capacity, int itemsz, 

@@ -1,6 +1,32 @@
 #include "array.h"
 
 /**
+ * array_expand_to_cap expands this array to capacity cap,
+ * if size is greater than cap or if capacity is already greater than or equal to cap, 
+ *   then nothing happened,
+ * else 
+ *   expand array to capacity cap
+ * @param  data     ptr to the memory
+ * @param  size     ptr to size of the contained items in array
+ * @param  capacity ptr to capacity of the array
+ * @param  itemsz   size of an array item
+ * @param  cap      capacity to be expanded to
+ * @return          0 for success, and -1 for failed
+ */
+int _array_expand_to_cap(char** data, int* size, int* capacity, int itemsz,
+                         int cap) {
+  if ((*size > cap) || (*capacity >= cap)) { return 0; } 
+
+  void* ptr;
+
+  ptr = realloc(*data, cap * itemsz);
+  if (ptr == NULL) { return -1; }
+  else { *data = ptr; *capacity = cap; }
+
+  return 0;
+}
+
+/**
  * _array_force_expand reallocs the memory ignoring size and capacity
  * @param  data     ptr to the memory
  * @param  size     ptr to size of the contained items in array
@@ -9,15 +35,9 @@
  * @return          0 for success, and -1 for failed
  */
 int _array_force_expand(char** data, int* size, int* capacity, int itemsz) {
-  void* ptr;
-  int n;
-
-  n = (*capacity == 0) ? 1 : (*capacity << 1);
-  ptr = realloc(*data, n * itemsz);
-  if (ptr == NULL) { return -1; }
-  else { *data = ptr; *capacity = n; }
-
-  return 0;
+  return _array_expand_to_cap(
+    data, size, capacity, itemsz, 
+    (*capacity == 0) ? 1 : (*capacity << 1));
 }
 
 /**
@@ -59,6 +79,27 @@ int _array_reverse(char** data, int* size, int* capacity, int itemsz) {
   }
 
   free(buf);
+
+  return 0;
+}
+
+/**
+ * _array_shrink_to_fit shrinks to fit its capacity with its size
+ * @param  data     ptr to the memory
+ * @param  size     ptr to size of the contained items in array
+ * @param  capacity ptr to capacity of the array
+ * @param  itemsz   size of an array item
+ * @return          0 for success, and -1 for failed
+ */
+int _array_shrink_to_fit(char** data, int* size, int* capacity, int itemsz) {
+  if (*size == *capacity) { return 0; }
+
+  void* ptr;
+  int n;
+
+  ptr = realloc(*data, (*size) * itemsz);
+  if (ptr == NULL) { return -1; }
+  else { *data = ptr; *capacity = *size; }
 
   return 0;
 }
@@ -110,7 +151,7 @@ int _array_move(char** data, int* size, int* capacity, int itemsz,
                 int from_idx, int to_idx) {
   if (from_idx == to_idx) { return 1; }
 
-  if (to_idx - from_idx + size >= capacity) {
+  if ((to_idx > from_idx) && (to_idx - from_idx + *size >= *capacity)) {
     if(_array_force_expand(data, size, capacity, itemsz) == -1) {
       return -1;
     }
