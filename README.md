@@ -6,13 +6,13 @@ This is a tiny lib for c, implemented easily.
 
 This lib includes some data structures as well as some easy but often used functions
 
-+ [x] dynamic array - array.h, let's say `array_t`
-+ [x] linked list   - list.h, let's say `list_t`
-+ [x] pool          - pool.h, let's say `pool_t`
-+ [ ] hash map      - map.h, let's say `map_t`
-+ [ ] string funcs  - strings.h
-+ [x] logger funcs  - logger.h
-+ [x] debug funcs   - debug.h
++ [x] dynamic array - array.h
++ [x] linked list   - list.h
++ [x] pool          - pool.h
++ [ ] hash map      - map.h
++ [x] string utils  - strings.h
++ [x] logger utils  - logger.h
++ [x] debug utils   - debug.h
 
 ## api intro
 
@@ -28,7 +28,7 @@ The api of tlfc is all the same among these data structures:
 
 In almost all api, if your access is invalid, the program will crash.
 
-## ref
+## thanks
 
 + [rxi/vec](https://github.com/rxi/vec)
 + [clibs/list](https://github.com/clibs/list)
