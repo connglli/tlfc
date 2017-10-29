@@ -6,13 +6,14 @@ This is a tiny lib for c, implemented easily.
 
 This lib includes some data structures as well as some easy but often used functions
 
-+ [x] dynamic array - array.h
-+ [x] linked list   - list.h
-+ [x] pool          - pool.h
-+ [ ] hash map      - map.h
-+ [x] string utils  - strutil.h
-+ [x] logger utils  - logger.h
-+ [x] debug utils   - debug.h
++ [x] dynamic array - array
++ [x] linked list   - list
++ [x] pool          - pool
++ [ ] hash map      - map
++ [ ] coroutine     - coro
++ [x] string utils  - strutil
++ [x] logger utils  - logger
++ [x] debug utils   - debug
 
 ## api intro
 
@@ -33,3 +34,4 @@ In almost all api, if your access is invalid, the program will crash.
 + [rxi/vec](https://github.com/rxi/vec)
 + [clibs/list](https://github.com/clibs/list)
 + [petewarden/c_hashmap](https://github.com/petewarden/c_hashmap)
++ [libtask](https://swtch.com/libtask/)

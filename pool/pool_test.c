@@ -21,6 +21,8 @@ int main() {
     assert(p.fishes[i].prev == i - 1);
   }
   assert(p.fishes[0].prev == -1);
+  assert(p.fishes[0].next == 1);
+  assert(p.fishes[19].prev == 18);
   assert(p.fishes[19].next == -1);
 
   c = 1024;
@@ -94,6 +96,14 @@ int main() {
   assert(p.alive_head == 0 && p.alive_tail == 0 && p.alive_size == 1);
   assert(p.dead_head == 1 && p.dead_size == 18);
   assert(pool_capacity(&p) == 20);
+
+  pool_expand_to_cap(&p, 23);
+  assert(pool_capacity(&p) == 23);
+  assert(p.alive_head == 0 && p.alive_tail == 0 && p.alive_size == 1);
+  assert(p.dead_head == 20 && p.dead_size == 21);
+  assert((p.fishes[20].prev == -1) && (p.fishes[20].next == 21));
+  assert((p.fishes[21].prev == 20) && (p.fishes[21].next == 22));
+  assert((p.fishes[22].prev == 21) && (p.fishes[22].next == 1));
 
   pool_deinit(&p);
 

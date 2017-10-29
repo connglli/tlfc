@@ -62,27 +62,27 @@ typedef int pool_fish_t;
     if (cap > 0) {                                                             \
       (p)->fishes = (void*)malloc((cap) * sizeof(*(p)->fishes));               \
       if ((p)->fishes == NULL) { assert(0); }                                  \
-      for (int i = 0; i < (cap) - 1; i ++) {                                   \
+      for (int i = 0; i < (cap); i ++) {                                       \
         (p)->fishes[i].state = POOL_FISH_STATE_DEAD;                           \
-        (p)->fishes[i].prev = i - 1;                                           \
-        (p)->fishes[i].next = i + 1;                                           \
+        (p)->fishes[i].prev  = i - 1;                                          \
+        (p)->fishes[i].next  = i + 1;                                          \
       }                                                                        \
-      (p)->fishes[0].prev = -1;                                                \
+      (p)->fishes[0].prev         = -1;                                        \
       (p)->fishes[(cap) - 1].next = -1;                                        \
-      (p)->capacity = (cap);                                                   \
-      (p)->alive_head = -1;                                                    \
-      (p)->alive_tail = -1;                                                    \
-      (p)->alive_size = 0;                                                     \
-      (p)->dead_head = 0;                                                      \
-      (p)->dead_size = (cap);                                                  \
+      (p)->capacity               = (cap);                                     \
+      (p)->alive_head             = -1;                                        \
+      (p)->alive_tail             = -1;                                        \
+      (p)->alive_size             = 0;                                         \
+      (p)->dead_head              = 0;                                         \
+      (p)->dead_size              = (cap);                                     \
     } else {                                                                   \
-      (p)->fishes = NULL;                                                      \
-      (p)->capacity = 0;                                                       \
+      (p)->fishes     = NULL;                                                  \
+      (p)->capacity   = 0;                                                     \
       (p)->alive_head = -1;                                                    \
       (p)->alive_tail = -1;                                                    \
       (p)->alive_size = 0;                                                     \
-      (p)->dead_head = -1;                                                     \
-      (p)->dead_size = 0;                                                      \
+      (p)->dead_head  = -1;                                                    \
+      (p)->dead_size  = 0;                                                     \
     }                                                                          \
   } while(0)
 
@@ -249,6 +249,35 @@ typedef int pool_fish_t;
     if ((p)->dead_head != -1) { (p)->fishes[(p)->dead_head].prev = (fish); }   \
     (p)->dead_head = (fish);                                                   \
     (p)->dead_size ++;                                                         \
+  } while(0)
+
+/**
+ * pool_expand expands the pool capacity to cap,
+ * if the capacity is already greater or equal to cap, 
+ *   then nothing happened,
+ * else
+ *   expands it to cap, if expand failed, the program will be crashed
+ * @param  p   ptr to a pool_t
+ * @param  cap cap to be expanded to
+ */
+#define pool_expand_to_cap(p, cap)                                             \
+  do {                                                                         \
+    if ((p)->capacity >= (cap)) { break; }                                     \
+    (p)->fishes = realloc((p)->fishes, (cap) * sizeof(*(p)->fishes));          \
+    if ((p)->fishes == NULL) { assert(0); }                                    \
+    for (int i = (p)->capacity; i < (cap); i ++) {                             \
+      (p)->fishes[i].state = POOL_FISH_STATE_DEAD;                             \
+      (p)->fishes[i].prev  = i - 1;                                            \
+      (p)->fishes[i].next  = i + 1;                                            \
+    }                                                                          \
+    (p)->fishes[(p)->capacity].prev = -1;                                      \
+    (p)->fishes[(cap) - 1].next     = (p)->dead_head;                          \
+    if ((p)->dead_head != -1) {                                                \
+      (p)->fishes[(p)->dead_head].prev = (cap) - 1;                            \
+    }                                                                          \
+    (p)->dead_head = (p)->capacity;                                            \
+    (p)->dead_size += (cap) - (p)->capacity;                                   \
+    (p)->capacity = (cap);                                                     \
   } while(0)
 
 /**
