@@ -4,16 +4,16 @@ This is a tiny lib for c, implemented easily.
 
 ## content
 
-This lib includes some data structures as well as some easy but often used functions
+This lib includes some data structures as well as some easy but often used functions.
 
-+ [x] dynamic array - array
-+ [x] linked list   - list
-+ [x] pool          - pool
-+ [ ] hash map      - map
-+ [ ] coroutine     - coro
-+ [x] string utils  - strutil
-+ [x] logger utils  - logger
-+ [x] debug utils   - debug
++ [x] [dynamic array - array](https://github.com/Leetsong/tlfc/tree/master/array)
++ [x] [linked list   - list](https://github.com/Leetsong/tlfc/tree/master/list)
++ [x] [pool          - pool](https://github.com/Leetsong/tlfc/tree/master/pool)
++ [ ] [hash map      - map]()
++ [x] [coroutine     - coro](https://github.com/Leetsong/tlfc/tree/master/coro)
++ [x] [string utils  - strutil](https://github.com/Leetsong/tlfc/tree/master/strutil)
++ [x] [logger utils  - logger](https://github.com/Leetsong/tlfc/tree/master/logger)
++ [x] [debug utils   - debug](https://github.com/Leetsong/tlfc/tree/master/debug)
 
 ## api intro
 
@@ -28,6 +28,10 @@ The api of tlfc is all the same among these data structures:
 + `xxx_deinit`: destroy a data structure, e.g. `list_deinit`
 
 In almost all api, if your access is invalid, the program will crash.
+
+## examples
+
+You can check source code of coro, it uses pool and list.
 
 ## thanks
 

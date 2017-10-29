@@ -4,37 +4,46 @@
 #include "coro.h"
 
 // declarations
+// ====
 
 extern coro_scheduler_t* coro_global_scheduler();
 static inline void _coro_scheduler_executor(uint32_t ps_l32, uint32_t ps_h32);
 
-
 // static functions
+// ====
 
+// _coro_to_coro_handler converts a pool_fish_t to coro_handler_t
 #define _coro_to_coro_handler(fish)                                            \
   ( (coro_handler_t)(fish) )
 
+// _coro_to_pool_fish converts a coro_handler_t to pool_fish_t
 #define _coro_to_pool_fish(c_hdlr)                                             \
   ( (pool_fish_t)(c_hdlr) )
 
+// _coro_scheduler_get_coro gets the coro of handler h
 #define _coro_scheduler_get_coro(s, h)                                         \
   ( pool_getp(&(s)->coro_pool, _coro_to_pool_fish(h)) )
 
+// _coro_switch_to_scheduler_from switch context to scheduler from coro c
 #define _coro_switch_to_scheduler_from(s, c)                                   \
   do { swapcontext(&(c)->uctxt, &(s)->scheduler_ctxt); } while(0)
 
+// _coro_switch_from_scheduler_to switch context to coro c from scheduler
 #define _coro_switch_from_scheduler_to(s, c)                                   \
   do { swapcontext(&(s)->scheduler_ctxt, &(c)->uctxt); } while(0)
 
+// _coro_scheduler_genid generates id
 #define _coro_scheduler_genid(s)                                               \
   ( (s)->idgen ++ )
 
+// _coro_init initializes a coro_t* c, with its corresponding scheduler, id,
+// its handler, ex, args, stack, and stacksz
 static inline
 coro_t* _coro_init(coro_t* c, 
                    coro_scheduler_t* s, 
                    int id, coro_handler_t c_hdlr,
-                   coro_ex_t ex, void* args, 
-                   char* stack, int stacksz) {
+                   coro_ex_t ex, void *args, 
+                   char *stack, int stacksz) {
   assert(NULL != c && 0 != s);
   assert(NULL != stack && 0 != stacksz);
   
@@ -65,6 +74,7 @@ coro_t* _coro_init(coro_t* c,
   return c;
 }
 
+// _coro_scheduler_pick_coro determines which coro will be executed next
 static inline
 coro_t* _coro_scheduler_pick_coro(coro_scheduler_t *s) {
   assert(NULL != s);
@@ -77,9 +87,10 @@ coro_t* _coro_scheduler_pick_coro(coro_scheduler_t *s) {
   return c;
 }
 
+// _coro_scheduler_serve_coro makes c to be runned by s immediately
 static inline
 void _coro_scheduler_serve_coro(coro_scheduler_t *s, 
-                                coro_t* c) {
+                                coro_t *c) {
   assert(NULL != s);
   // we only serve the fist by FCFS
   assert(_coro_scheduler_pick_coro(s) == c);
@@ -93,6 +104,7 @@ void _coro_scheduler_serve_coro(coro_scheduler_t *s,
   _coro_switch_from_scheduler_to(s, c);
 }
 
+// _coro_scheduler_queue_coro queues c in s, with state
 static inline
 void _coro_scheduler_queue_coro(coro_scheduler_t *s, 
                                 coro_t *c, int state) {
@@ -104,6 +116,7 @@ void _coro_scheduler_queue_coro(coro_scheduler_t *s,
   c->state = state;
 }
 
+// _coro_scheduler_push_coro blews out a coro from pool for a new coro
 static inline
 coro_handler_t _coro_scheduler_push_coro(coro_scheduler_t *s) {
   assert(NULL != s);
@@ -124,6 +137,7 @@ coro_handler_t _coro_scheduler_push_coro(coro_scheduler_t *s) {
   return _coro_to_coro_handler(fish);
 }
 
+// _coro_scheduler_pull_coro swallows a coro back to pool, and free its stack
 static inline
 void _coro_scheduler_pull_coro(coro_scheduler_t *s, coro_handler_t c_hdlr) {
   assert(NULL != s);
@@ -136,6 +150,7 @@ void _coro_scheduler_pull_coro(coro_scheduler_t *s, coro_handler_t c_hdlr) {
   pool_kill(&s->coro_pool, _coro_to_pool_fish(c_hdlr));
 }
 
+// _coro_scheduler_coro is the real coro(), it wrapps ex, and queues it
 static inline
 void _coro_scheduler_coro(coro_scheduler_t *s, coro_ex_t ex, void *args) {
   coro_handler_t c_hdlr  = _coro_scheduler_push_coro(s);
@@ -158,6 +173,7 @@ void _coro_scheduler_coro(coro_scheduler_t *s, coro_ex_t ex, void *args) {
   _coro_scheduler_queue_coro(s, c, CORO_STATE_READY);
 }
 
+// _coro_scheduler_yield is the real yield(), it switches context to scheduler
 static inline
 void _coro_scheduler_yield(coro_scheduler_t *s) {
   coro_t *yielded_coro = s->curr_coro;
@@ -168,16 +184,17 @@ void _coro_scheduler_yield(coro_scheduler_t *s) {
   _coro_switch_to_scheduler_from(s, yielded_coro);
 }
 
+// _coro_scheduler_executor is the wrapper of ex, it manages the lifespan of ex
 static inline
 void _coro_scheduler_executor(uint32_t ps_l32, uint32_t ps_h32) {
   uintptr_t ps = ps_l32 | (uintptr_t)ps_h32 << 32;
-  coro_scheduler_t* s = (coro_scheduler_t*)ps;
+  coro_scheduler_t *s = (coro_scheduler_t*)ps;
 
   coro_t *curr_coro = s->curr_coro;
   assert(curr_coro != NULL);
 
   coro_ex_t ex = curr_coro->ex;
-  void* args = curr_coro->args;
+  void *args = curr_coro->args;
 
   // execute it
   ex(args);
@@ -194,8 +211,13 @@ void _coro_scheduler_executor(uint32_t ps_l32, uint32_t ps_h32) {
   _coro_switch_to_scheduler_from(s, curr_coro);
 }
 
-// coro implementation goes from here
+// coro implementation
+// ====
 
+/**
+ * coro_scheduler_init initializes a coro_scheduler_t
+ * @param s ptr to a coro_scheduler_t
+ */
 void coro_scheduler_init(coro_scheduler_t *s) {
   assert(NULL != s);
   s->idgen     = 0;
@@ -204,6 +226,10 @@ void coro_scheduler_init(coro_scheduler_t *s) {
   pool_init(&s->coro_pool, CORO_DEFAULT_NR_CORO);
 }
 
+/**
+ * coro_scheduler_run runs a coro_scheduler_t
+ * @param s ptr to a coro_scheduler_t
+ */
 void coro_scheduler_run(coro_scheduler_t *s) {
   assert(NULL != s);
 
@@ -236,6 +262,10 @@ void coro_scheduler_run(coro_scheduler_t *s) {
   } while(1);
 }
 
+/**
+ * coro_scheduler_deinit destroys a coro_scheduler_t
+ * @param s ptr to a coro_scheduler_t
+ */
 void coro_scheduler_deinit(coro_scheduler_t *s) {
   if (NULL == s) { return; }
   list_deinit(&s->coro_queue);
@@ -244,10 +274,20 @@ void coro_scheduler_deinit(coro_scheduler_t *s) {
   s->idgen     = 0;
 }
 
+/**
+ * coro creates and runs a coroutine of ex, just like the key word `go` 
+ * in Golang
+ * @param ex   exeutable function
+ * @param args args of ex
+ */
 void coro(coro_ex_t ex, void *args) {
   _coro_scheduler_coro(coro_global_scheduler(), ex, args);
 }
 
+/**
+ * yield yields CPU to other coroutines, just like the key word `yield` 
+ * in ECMA2015+ or python.
+ */
 void yield() {
   _coro_scheduler_yield(coro_global_scheduler());
 }

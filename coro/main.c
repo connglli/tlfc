@@ -19,23 +19,23 @@ static
 void* _coro_main(void *args);
 
 coro_scheduler_t* coro_global_scheduler() {
-	return _g_scheduler;
+  return _g_scheduler;
 }
 
 int main(int argc, char *argv[]) {
-	_g_coro_main_argc = argc;
-	_g_coro_main_argv = (char**)argv;
+  _g_coro_main_argc = argc;
+  _g_coro_main_argv = (char**)argv;
 
-	coro_scheduler_init(_g_scheduler);
-	coro(_coro_main, NULL);
-	coro_scheduler_run(_g_scheduler);
-	coro_scheduler_deinit(_g_scheduler);
+  coro_scheduler_init(_g_scheduler);
+  coro(_coro_main, NULL);
+  coro_scheduler_run(_g_scheduler);
+  coro_scheduler_deinit(_g_scheduler);
 
-	return 0;
+  return 0;
 }
 
 static
 void* _coro_main(void *args) {
-	coro_main(_g_coro_main_argc, _g_coro_main_argv);
-	return NULL;
+  coro_main(_g_coro_main_argc, _g_coro_main_argv);
+  return NULL;
 }
