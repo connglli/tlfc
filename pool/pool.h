@@ -160,12 +160,12 @@ typedef int pool_fish_t;
  * @param  fish pool_fish_t to be queried
  * @return      ptr to data of fish
  */
-#define pool_getp(p, fish)                                                      \
+#define pool_getp(p, fish)                                                     \
   ( pool_safe_fish((p), (fish)) == (fish)                                      \
     ? ((p)->fishes[(fish)].state == POOL_FISH_STATE_ALIVE                      \
        ? &((p)->fishes[(fish)].data)                                           \
-       : (assert(0), (0)))                                                     \
-    : (0) )
+       : (assert(0), (NULL)))                                                  \
+    : (NULL) )
 
 /**
  * pool_set sets data via a alive pool_fish_t, or crash the program

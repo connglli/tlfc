@@ -112,6 +112,15 @@
   ( (a)->data[array_safe_index((a), (idx))] )
 
 /**
+ * array_getp safely gets pointer to the idx-th item
+ * @param  a   ptr to an array_t
+ * @param  idx idx to be quried, must be valid
+ * @return     pointer to idx-th item if safe else crash the program
+ */
+#define array_getp(a, idx)                                                      \
+  ( &((a)->data[array_safe_index((a), (idx))]) )
+
+/**
  * array_set safely sets the idx-th item
  * @param  a   ptr to an array_t
  * @param  idx idx to be quried, must be valid

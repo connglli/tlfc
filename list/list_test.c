@@ -9,7 +9,9 @@ int main() {
   list_init(&l);
   list_node_int_t *n, *p;
   void* v;
-  int i, s;
+  int i, s, x, *px;
+
+  assert(list_nodesz(&l) == sizeof(list_node_int_t));
 
   for(int i = 0; i < 5; i ++) {
     list_append(&l, i);
@@ -175,6 +177,30 @@ int main() {
       assert(p->data == 1111);
     } else {
       assert(p->data == i - 2);
+    }
+  }
+
+  s = list_size(&l);
+  for(int i = 0; i < s; i ++) {
+    list_get(&l, i, &x);
+    if (i == 0) {
+      assert(x == 1234);
+    } else if (i == 1) {
+      assert(x == 1111);
+    } else {
+      assert(x == i - 2);
+    }
+  }
+
+  s = list_size(&l);
+  for(int i = 0; i < s; i ++) {
+    list_getp(&l, i, &px);
+    if (i == 0) {
+      assert(*px == 1234);
+    } else if (i == 1) {
+      assert(*px == 1111);
+    } else {
+      assert(*px == i - 2);
     }
   }
 

@@ -25,6 +25,11 @@ void test_array_int_t() {
     assert(array_get(&l, i) == i);
   }
 
+  s = array_size(&l);
+  for(int i = 0; i < s; i ++) {
+    assert(*array_getp(&l, i) == i);
+  }
+
   array_reverse(&l);
   for(int i = 0; i < s; i ++) {
     assert(array_get(&l, i) == s - i - 1);
