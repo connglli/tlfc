@@ -1,7 +1,13 @@
-all: coro_test
+CC =  gcc
+CFLAGS = -Wall -I./src -I./lib
 
-coro_test:
-	gcc -o coro_test asm.S context.c list.c coro.c coro_test.c main.c -I. -Wall
+SRC_FILES = $(shell find . -name "*.[Sc]" ! -path "./example/*")
+OBJ_FILES = $(SRC_FILES:%.o=.c)
+
+all: ping_pong
+
+ping_pong: $(OBJ_FILES) ./example/ping_pong.o
+	$(CC) -o ping_pong $(OBJ_FILES) ./example/ping_pong.o $(CFLAGS)
 
 clean:
-	@rm -f coro_test
+	@rm -f ./example/*.o ping_pong

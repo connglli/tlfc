@@ -1,10 +1,10 @@
 #ifndef __CORO_DEF_H__
 #define __CORO_DEF_H__
 
-#include "context.h"
+#include "context/context.h"
+#include "list/list.h"
+#include "pool/pool.h"
 #include "coro.h"
-#include "list.h"
-#include "pool.h"
 
 /**
  * coro_t represents an executable coroutine
