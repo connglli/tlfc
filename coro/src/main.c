@@ -1,5 +1,5 @@
 #include "coro.h"
-#include "coro_def.h"
+#include "def.h"
 
 extern int  coro_main(int argc, char *argv[]);
 extern void coro_scheduler_init(coro_scheduler_t *scheduler);

@@ -1,46 +1,26 @@
 #include "coro.h"
 #include <stdio.h>
 
-void* coro1(void* args) {
-  for (int i = 0; i < 10; ++i) {
-    printf("coro1: %d\n", i);
-  }
-
-  yield();
-
-  for (int i = 10; i < 20; ++i) {
-    printf("coro1: %d\n", i);
-  }
+CORO_EX(ping, args) {
+  do {
+    printf("ping\n");
+    yield();
+  } while(1);
 
   return NULL;
 }
 
-void* coro2(void* args) {
-  for (int i = 0; i < 5; ++i) {
-    printf("coro2: %d\n", i);
-  }
-
-  yield();
-
-  for (int i = 5; i < 10; ++i) {
-    printf("coro2: %d\n", i);
-  }
-
-  return NULL;
-}
-
-void* coro3(void* args) {
-  for (int i = 0; i < 10; ++i) {
-    printf("coro3: %d\n", i);
-  }
+CORO_EX(pong, args) {
+  do {
+    printf("pong\n");
+    yield();
+  } while(1);
 
   return NULL;
 }
 
 int coro_main(int argc, char* argv[]) {
-  coro(coro1, NULL);
-  coro(coro2, NULL);
-  coro(coro3, NULL);
-
+  coro(ping, NULL);
+  coro(pong, NULL);
   return 0;
 }

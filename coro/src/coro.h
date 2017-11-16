@@ -2,6 +2,14 @@
 #define __CORO_H__
 
 /**
+ * CORO_EX defines a coro_ex_t
+ * @param  ex_name name of this coro_ex_t
+ * @param  ex_args args of this coro_ex_t
+ * @return         definition of this coro_ex_t
+ */
+#define CORO_EX(ex_name, ex_args) void* ex_name(void *ex_args)
+
+/**
  * coro_ex_t is the function executed by coroutine
  */
 typedef void* (*coro_ex_t)(void*);
