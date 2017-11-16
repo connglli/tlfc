@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <assert.h>
+#include <sys/time.h>
 #include "def.h"
 #include "coro.h"
+#include "mailbox.h"
 
 // declarations
 // ====
@@ -41,7 +43,7 @@ static inline void _coro_scheduler_executor(uint32_t ps_l32, uint32_t ps_h32);
 static inline
 coro_t* _coro_init(coro_t* c, 
                    coro_scheduler_t* s, 
-                   int id, coro_handler_t c_hdlr,
+                   coro_id_t id, coro_handler_t c_hdlr,
                    coro_ex_t ex, void *args, 
                    char *stack, int stacksz) {
   assert(NULL != c && 0 != s);
@@ -55,6 +57,9 @@ coro_t* _coro_init(coro_t* c,
   // exec
   c->ex   = ex;
   c->args = args;
+
+  // mailbox
+  _coro_mailbox_init(&c->mailbox);
 
   // stack
   c->stack   = stack;
@@ -70,6 +75,20 @@ coro_t* _coro_init(coro_t* c,
   c->uctxt.uc_stack.ss_sp   = c->stack;
   c->uctxt.uc_stack.ss_size = c->stacksz;
   makecontext(&c->uctxt, _coro_scheduler_executor, 2, ps_l32, ps_h32);
+
+  return c;
+}
+
+// _coro_scheduler_find_coro find the coro with id cid
+static inline
+coro_t* _coro_scheduler_find_coro(coro_scheduler_t *s, coro_id_t id) {
+  assert(NULL != s);
+
+  coro_t           *c = NULL;
+  list_coro_node_t *n = NULL;
+  list_foreach_n(&s->coro_queue, n) {
+    if (list_node_data(n)->id == id) { c = list_node_data(n); break; }
+  }
 
   return c;
 }
@@ -116,9 +135,9 @@ void _coro_scheduler_queue_coro(coro_scheduler_t *s,
   c->state = state;
 }
 
-// _coro_scheduler_push_coro blews out a coro from pool for a new coro
+// _coro_scheduler_squeeze_coro blews out a coro from pool for a new coro
 static inline
-coro_handler_t _coro_scheduler_push_coro(coro_scheduler_t *s) {
+coro_handler_t _coro_scheduler_squeeze_coro(coro_scheduler_t *s) {
   assert(NULL != s);
 
   pool_fish_t fish;
@@ -137,9 +156,9 @@ coro_handler_t _coro_scheduler_push_coro(coro_scheduler_t *s) {
   return _coro_to_coro_handler(fish);
 }
 
-// _coro_scheduler_pull_coro swallows a coro back to pool, and free its stack
+// _coro_scheduler_absorb_coro swallows a coro back to pool, and free its stack
 static inline
-void _coro_scheduler_pull_coro(coro_scheduler_t *s, coro_handler_t c_hdlr) {
+void _coro_scheduler_absorb_coro(coro_scheduler_t *s, coro_handler_t c_hdlr) {
   assert(NULL != s);
   assert(pool_is_fish_in_pool(&s->coro_pool, _coro_to_pool_fish(c_hdlr)));
 
@@ -152,8 +171,8 @@ void _coro_scheduler_pull_coro(coro_scheduler_t *s, coro_handler_t c_hdlr) {
 
 // _coro_scheduler_coro is the real coro(), it wrapps ex, and queues it
 static inline
-void _coro_scheduler_coro(coro_scheduler_t *s, coro_ex_t ex, void *args) {
-  coro_handler_t c_hdlr  = _coro_scheduler_push_coro(s);
+coro_id_t _coro_scheduler_coro(coro_scheduler_t *s, coro_ex_t ex, void *args) {
+  coro_handler_t c_hdlr  = _coro_scheduler_squeeze_coro(s);
   coro_t        *c       = _coro_scheduler_get_coro(s, c_hdlr);
   char          *stack   = c->stack;
   int            stacksz = c->stacksz;
@@ -171,6 +190,8 @@ void _coro_scheduler_coro(coro_scheduler_t *s, coro_ex_t ex, void *args) {
     stack, stacksz);
 
   _coro_scheduler_queue_coro(s, c, CORO_STATE_READY);
+
+  return c->id;
 }
 
 // _coro_scheduler_yield is the real yield(), it switches context to scheduler
@@ -203,7 +224,7 @@ void _coro_scheduler_executor(uint32_t ps_l32, uint32_t ps_h32) {
   s->curr_coro = NULL;
 
   curr_coro->state = CORO_STATE_DEAD;
-  _coro_scheduler_pull_coro(s, curr_coro->hdlr);
+  _coro_scheduler_absorb_coro(s, curr_coro->hdlr);
 
   // !!! IMPORTRANT 
   // uc_link does not work for the implementation of libtask/context,
@@ -213,6 +234,10 @@ void _coro_scheduler_executor(uint32_t ps_l32, uint32_t ps_h32) {
 
 // coro implementation
 // ====
+
+/*----------------------------------------------------------------------------
+                                    scheduler
+  ----------------------------------------------------------------------------*/
 
 /**
  * coro_scheduler_init initializes a coro_scheduler_t
@@ -274,14 +299,18 @@ void coro_scheduler_deinit(coro_scheduler_t *s) {
   s->idgen     = 0;
 }
 
+/*----------------------------------------------------------------------------
+                                    coroutine
+  ----------------------------------------------------------------------------*/
+
 /**
- * coro creates and runs a coroutine of ex, just like the key word `go` 
- * in Golang
+ * coro creates and queues a coroutine of ex, does not run immediately
  * @param ex   exeutable function
  * @param args args of ex
+ * @return     id of this coroutine
  */
-void coro(coro_ex_t ex, void *args) {
-  _coro_scheduler_coro(coro_global_scheduler(), ex, args);
+coro_id_t coro(coro_ex_t ex, void *args) {
+  return _coro_scheduler_coro(coro_global_scheduler(), ex, args);
 }
 
 /**
@@ -290,4 +319,100 @@ void coro(coro_ex_t ex, void *args) {
  */
 void yield() {
   _coro_scheduler_yield(coro_global_scheduler());
+}
+
+/**
+ * self returns id of this coroutine
+ * @return id of this coroutine
+ */
+coro_id_t self() {
+  return coro_global_scheduler()->curr_coro->id;
+}
+
+/*----------------------------------------------------------------------------
+                                    messaging
+  ----------------------------------------------------------------------------*/
+
+/**
+ * send sends a message to cid
+ * @param  cid  id of the receiver
+ * @param  type message type
+ * @param  data message data
+ * @return      0 when succeeded else -1
+ */
+int send(coro_id_t cid, int type, void *data) {
+  coro_scheduler_t *s = coro_global_scheduler();
+  coro_t           *c = _coro_scheduler_find_coro(s, cid);
+
+  if (NULL == c) { return -1; }
+
+  coro_mail_t m = { self(), cid, type, data };
+
+  // all coroutine runs in one thread, so we do not need any lock,
+  // or, we have to add a lock member to struct mailbox.
+  _coro_mailbox_put_mail(&c->mailbox, m);
+
+  return 0;
+}
+
+/**
+ * receive receives a message from other coroutine: 
+ *  if there is a message, then return immediately;
+ *  else if timeout > 0, then block until there is a message within timeout;
+ *  else if timeout = 0, then return immediately;
+ *  else block until there is a message
+ * @param  timeout blocked time, in ms
+ * @return         message received(or the message type will be a negative number)
+ */
+coro_msg_t receive(long long timeout) {
+  coro_scheduler_t *s         = coro_global_scheduler();
+  coro_t           *curr_coro = s->curr_coro;
+  coro_mailbox_t   *mb        = &curr_coro->mailbox;
+  coro_msg_t        m         = { 0, 0, -1, NULL };
+
+  // there is a message, return immediately
+  if (!_coro_mailbox_is_empty(mb)) { 
+    m = _coro_mailbox_get_mail(mb);
+    return m;
+  }
+
+  // nonblock
+  if (0 == timeout) { return m; }
+
+  // block until there is a message
+  if (timeout < 0) {
+    while(_coro_mailbox_is_empty(mb)) {
+      yield();
+    }
+
+    m = _coro_mailbox_get_mail(mb);
+
+    return m;
+  }
+
+  // block until time out or a message is available
+  struct timeval  tv;
+  struct timezone tz;
+
+  int ret    = gettimeofday(&tv, &tz);
+  if (ret != 0) { return m; } // error
+
+  long long t_from      = tv.tv_sec * 1000;
+  long long t_duration  = 0;
+
+  do {
+    yield();
+    
+    if (!_coro_mailbox_is_empty(mb)) { 
+      m = _coro_mailbox_get_mail(mb);
+      return m;
+    }
+
+    ret = gettimeofday(&tv, &tz);
+    if (ret != 0) { return m; } // error
+
+    t_duration = tv.tv_sec * 1000 - t_from;
+  } while(t_duration < timeout);
+  
+  return m;
 }

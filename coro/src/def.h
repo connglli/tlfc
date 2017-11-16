@@ -5,6 +5,7 @@
 #include "list/list.h"
 #include "pool/pool.h"
 #include "coro.h"
+#include "mailbox.h"
 
 /**
  * coro_t represents an executable coroutine
@@ -55,11 +56,13 @@ struct coro_t {
   int                stacksz;   // stack size
   ucontext_t         uctxt;     // context
   coro_handler_t     hdlr;      // pool handler
-  int                id;        // unique id
+  coro_id_t          id;        // unique id
   int                state;     // state
   coro_scheduler_t  *scheduler; // scheduler
   coro_ex_t          ex;        // exec function
   void              *args;      // args of exec function
+
+  coro_mailbox_t     mailbox;   // mailbox used for communication(actor model)
 };
 
 /**
