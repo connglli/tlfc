@@ -15,7 +15,6 @@ typedef int coro_id_t;
  */
 typedef void* (*coro_ex_t)(void*);
 
-
 /**
  * CORO_EX defines a coro_ex_t
  * @param  ex_name name of this coro_ex_t
@@ -73,7 +72,7 @@ int send(coro_id_t cid, int type, void *data);
  *  else if timeout > 0, then blocked until there is a message within timeout;
  *  else if timeout = 0, then return immediately;
  *  else blocked until there is a message
- * @param  timeout blocked time
+ * @param  timeout blocked time(millisecond)
  * @return         message received(or the message type will be a negative number)
  */
 coro_msg_t receive(long long timeout);

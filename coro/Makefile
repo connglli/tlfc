@@ -1,4 +1,4 @@
-CC =  gcc
+CC = gcc
 CFLAGS = -Wall -I./src -I./lib
 
 SRC_FILES = $(shell find . -name "*.[Sc]" ! -path "./example/*")

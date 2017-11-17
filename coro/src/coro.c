@@ -22,8 +22,8 @@ static inline void _coro_scheduler_executor(uint32_t ps_l32, uint32_t ps_h32);
 #define _coro_to_pool_fish(c_hdlr)                                             \
   ( (pool_fish_t)(c_hdlr) )
 
-// _coro_scheduler_get_coro gets the coro of handler h
-#define _coro_scheduler_get_coro(s, h)                                         \
+// _coro_scheduler_find_coro_by_hdlr gets the coro of handler h
+#define _coro_scheduler_find_coro_by_hdlr(s, h)                                \
   ( pool_getp(&(s)->coro_pool, _coro_to_pool_fish(h)) )
 
 // _coro_switch_to_scheduler_from switch context to scheduler from coro c
@@ -41,8 +41,8 @@ static inline void _coro_scheduler_executor(uint32_t ps_l32, uint32_t ps_h32);
 // _coro_init initializes a coro_t* c, with its corresponding scheduler, id,
 // its handler, ex, args, stack, and stacksz
 static inline
-coro_t* _coro_init(coro_t* c, 
-                   coro_scheduler_t* s, 
+coro_t* _coro_init(coro_t *c,
+                   coro_scheduler_t *s,
                    coro_id_t id, coro_handler_t c_hdlr,
                    coro_ex_t ex, void *args, 
                    char *stack, int stacksz) {
@@ -79,9 +79,16 @@ coro_t* _coro_init(coro_t* c,
   return c;
 }
 
-// _coro_scheduler_find_coro find the coro with id cid
+// _coro_deinit deinits a coro_t
 static inline
-coro_t* _coro_scheduler_find_coro(coro_scheduler_t *s, coro_id_t id) {
+void _coro_deinit(coro_t *c) {
+  free(c->stack);
+  _coro_mailbox_deinit(&c->mailbox);
+}
+
+// _coro_scheduler_find_coro_by_id find the coro with id cid
+static inline
+coro_t* _coro_scheduler_find_coro_by_id(coro_scheduler_t *s, coro_id_t id) {
   assert(NULL != s);
 
   coro_t           *c = NULL;
@@ -162,9 +169,9 @@ void _coro_scheduler_absorb_coro(coro_scheduler_t *s, coro_handler_t c_hdlr) {
   assert(NULL != s);
   assert(pool_is_fish_in_pool(&s->coro_pool, _coro_to_pool_fish(c_hdlr)));
 
-  // free its stack
-  coro_t *c = _coro_scheduler_get_coro(s, c_hdlr);
-  free(c->stack);
+  // deinit c
+  coro_t *c = _coro_scheduler_find_coro_by_hdlr(s, c_hdlr);
+  _coro_deinit(c);
 
   pool_kill(&s->coro_pool, _coro_to_pool_fish(c_hdlr));
 }
@@ -173,7 +180,7 @@ void _coro_scheduler_absorb_coro(coro_scheduler_t *s, coro_handler_t c_hdlr) {
 static inline
 coro_id_t _coro_scheduler_coro(coro_scheduler_t *s, coro_ex_t ex, void *args) {
   coro_handler_t c_hdlr  = _coro_scheduler_squeeze_coro(s);
-  coro_t        *c       = _coro_scheduler_get_coro(s, c_hdlr);
+  coro_t        *c       = _coro_scheduler_find_coro_by_hdlr(s, c_hdlr);
   char          *stack   = c->stack;
   int            stacksz = c->stacksz;
 
@@ -342,7 +349,7 @@ coro_id_t self() {
  */
 int send(coro_id_t cid, int type, void *data) {
   coro_scheduler_t *s = coro_global_scheduler();
-  coro_t           *c = _coro_scheduler_find_coro(s, cid);
+  coro_t           *c = _coro_scheduler_find_coro_by_id(s, cid);
 
   if (NULL == c) { return -1; }
 
@@ -361,7 +368,7 @@ int send(coro_id_t cid, int type, void *data) {
  *  else if timeout > 0, then block until there is a message within timeout;
  *  else if timeout = 0, then return immediately;
  *  else block until there is a message
- * @param  timeout blocked time, in ms
+ * @param  timeout blocked time(millisecond)
  * @return         message received(or the message type will be a negative number)
  */
 coro_msg_t receive(long long timeout) {

@@ -35,6 +35,11 @@ void _coro_mailbox_init(coro_mailbox_t *mb) {
 }
 
 static inline
+void _coro_mailbox_deinit(coro_mailbox_t *mb) {
+  list_deinit(&mb->mails);
+}
+
+static inline
 void _coro_mailbox_put_mail(coro_mailbox_t *mb, coro_mail_t m) {
   list_append(&mb->mails, m);
 }
