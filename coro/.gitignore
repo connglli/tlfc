@@ -1,3 +1,6 @@
-ping_pong_yield
-ping_pong_msg
+easy_coro
+easy_ping_pong
+ping_pong
+fibonacci
+fib.txt
 ./example/*.o

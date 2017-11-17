@@ -82,7 +82,7 @@ coro_t* _coro_init(coro_t *c,
 // _coro_deinit deinits a coro_t
 static inline
 void _coro_deinit(coro_t *c) {
-  free(c->stack);
+  free(c->stack); c->stack = NULL;
   _coro_mailbox_deinit(&c->mailbox);
 }
 

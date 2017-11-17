@@ -19,7 +19,7 @@ CORO_EX(pong, args) {
   return NULL;
 }
 
-int coro_main(int argc, char* argv[]) {
+int coro_main(int argc, char *argv[]) {
   coro(ping, NULL);
   coro(pong, NULL);
   return 0;
