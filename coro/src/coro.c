@@ -413,7 +413,7 @@ void coro_scheduler_run(coro_scheduler_t *s) {
     // no coro is suspended, but there are delayed
     if (NULL == c && _coro_scheduler_has_delayed_coros(s)) { continue; }
     // no more coros, exit the program
-    else if(NULL == c) { break; }
+    else if (NULL == c) { break; }
 
     switch (c->state) {
       case CORO_STATE_READY:
