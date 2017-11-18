@@ -70,6 +70,7 @@ CORO_EX(fib_writer, args) {
         fprintf(stderr, 
                 "error while fib_writer is writing [%d, %lld] to fd %d\n",
                 idx, fib, fd);
+        close(fd);
         break;
       } else {
         fprintf(stdout, "fib_writer wrote [%d, %lld]\n", idx, fib);
@@ -78,6 +79,7 @@ CORO_EX(fib_writer, args) {
       close(fd);
       break;
     } else {
+      close(fd);
       fprintf(stderr, 
               "error while fib_writer is receiving"
                 " message of type %d from coro %d\n",

@@ -9,7 +9,7 @@
 // ====
 
 extern coro_scheduler_t* coro_global_scheduler();
-static inline void _coro_scheduler_executor(uint32_t ps_l32, uint32_t ps_h32);
+static void _coro_scheduler_executor(uint32_t ps_l32, uint32_t ps_h32);
 
 // static functions
 // ====
@@ -34,13 +34,17 @@ static inline void _coro_scheduler_executor(uint32_t ps_l32, uint32_t ps_h32);
 #define _coro_switch_from_scheduler_to(s, c)                                   \
   do { swapcontext(&(s)->scheduler_ctxt, &(c)->uctxt); } while(0)
 
+// _coro_scheduler_has_delayed_coros determine whether has delayed coros
+#define _coro_scheduler_has_delayed_coros(s)                                   \
+  ( list_size(&(s)->delayed_coros) != 0 )
+
 // _coro_scheduler_genid generates id
 #define _coro_scheduler_genid(s)                                               \
   ( (s)->idgen ++ )
 
 // _coro_init initializes a coro_t* c, with its corresponding scheduler, id,
 // its handler, ex, args, stack, and stacksz
-static inline
+static
 coro_t* _coro_init(coro_t *c,
                    coro_scheduler_t *s,
                    coro_id_t id, coro_handler_t c_hdlr,
@@ -80,49 +84,38 @@ coro_t* _coro_init(coro_t *c,
 }
 
 // _coro_deinit deinits a coro_t
-static inline
+static
 void _coro_deinit(coro_t *c) {
   free(c->stack); c->stack = NULL;
   _coro_mailbox_deinit(&c->mailbox);
 }
 
 // _coro_scheduler_find_coro_by_id find the coro with id cid
-static inline
+static
 coro_t* _coro_scheduler_find_coro_by_id(coro_scheduler_t *s, coro_id_t id) {
   assert(NULL != s);
 
   coro_t           *c = NULL;
   list_coro_node_t *n = NULL;
-  list_foreach_n(&s->coro_queue, n) {
-    if (list_node_data(n)->id == id) { c = list_node_data(n); break; }
+  list_foreach_n(&s->suspended_coros, n) {
+    if (list_node_data(n)->id == id) { c = list_node_data(n); return c; }
+  }
+
+  list_coro_delayed_node_t *nn = NULL;
+  list_foreach_n(&s->delayed_coros, nn) {
+    if (list_node_data(nn).c->id == id) { c = list_node_data(nn).c; return c; }
   }
 
   return c;
 }
 
-// _coro_scheduler_pick_coro determines which coro will be executed next
-static inline
-coro_t* _coro_scheduler_pick_coro(coro_scheduler_t *s) {
-  assert(NULL != s);
-  if (list_size(&s->coro_queue) == 0) { return NULL; }
-
-  // coro scheduling obeys FCFS
-  coro_t *c = list_node_data(list_head(&s->coro_queue));
-  assert(NULL != c);
-
-  return c;
-}
-
 // _coro_scheduler_serve_coro makes c to be runned by s immediately
-static inline
+static
 void _coro_scheduler_serve_coro(coro_scheduler_t *s, 
                                 coro_t *c) {
   assert(NULL != s);
-  // we only serve the fist by FCFS
-  assert(_coro_scheduler_pick_coro(s) == c);
 
-  // remove c from queue and change its state
-  list_remove(&s->coro_queue, 0);
+  // change its state
   c->state = CORO_STATE_ACTIVE;
 
   // run it
@@ -131,19 +124,31 @@ void _coro_scheduler_serve_coro(coro_scheduler_t *s,
 }
 
 // _coro_scheduler_queue_coro queues c in s, with state
-static inline
+static
 void _coro_scheduler_queue_coro(coro_scheduler_t *s, 
                                 coro_t *c, int state) {
   assert(NULL != s && NULL != c);
-  assert(CORO_STATE_READY == state || CORO_STATE_SUSPEND == state);
+  assert(CORO_STATE_READY == state || CORO_STATE_SUSPENDED == state);
 
   // add c to queue and change its state 
-  list_append(&s->coro_queue, c);
+  list_append(&s->suspended_coros, c);
   c->state = state;
 }
 
-// _coro_scheduler_squeeze_coro blews out a coro from pool for a new coro
+// _coro_scheduler_suspend_coro suspended c in s, with state CORO_STATE_SUSPENDED
 static inline
+void _coro_scheduler_suspend_coro(coro_scheduler_t *s,  coro_t *c) {
+  _coro_scheduler_queue_coro(s, c, CORO_STATE_SUSPENDED);
+}
+
+// _coro_scheduler_prepare_coro prepares c in s, with state CORO_STATE_READY
+static inline
+void _coro_scheduler_prepare_coro(coro_scheduler_t *s,  coro_t *c) {
+  _coro_scheduler_queue_coro(s, c, CORO_STATE_READY);
+}
+
+// _coro_scheduler_squeeze_coro blews out a coro from pool for a new coro
+static
 coro_handler_t _coro_scheduler_squeeze_coro(coro_scheduler_t *s) {
   assert(NULL != s);
 
@@ -164,7 +169,7 @@ coro_handler_t _coro_scheduler_squeeze_coro(coro_scheduler_t *s) {
 }
 
 // _coro_scheduler_absorb_coro swallows a coro back to pool, and free its stack
-static inline
+static
 void _coro_scheduler_absorb_coro(coro_scheduler_t *s, coro_handler_t c_hdlr) {
   assert(NULL != s);
   assert(pool_is_fish_in_pool(&s->coro_pool, _coro_to_pool_fish(c_hdlr)));
@@ -177,7 +182,7 @@ void _coro_scheduler_absorb_coro(coro_scheduler_t *s, coro_handler_t c_hdlr) {
 }
 
 // _coro_scheduler_coro is the real coro(), it wrapps ex, and queues it
-static inline
+static
 coro_id_t _coro_scheduler_coro(coro_scheduler_t *s, coro_ex_t ex, void *args) {
   coro_handler_t c_hdlr  = _coro_scheduler_squeeze_coro(s);
   coro_t        *c       = _coro_scheduler_find_coro_by_hdlr(s, c_hdlr);
@@ -191,29 +196,162 @@ coro_id_t _coro_scheduler_coro(coro_scheduler_t *s, coro_ex_t ex, void *args) {
   }
 
   _coro_init(c,
-    s, 
+    s,
     _coro_scheduler_genid(s), c_hdlr,
     ex, args, 
     stack, stacksz);
 
-  _coro_scheduler_queue_coro(s, c, CORO_STATE_READY);
+  _coro_scheduler_prepare_coro(s, c);
 
   return c->id;
 }
 
 // _coro_scheduler_yield is the real yield(), it switches context to scheduler
-static inline
+static
 void _coro_scheduler_yield(coro_scheduler_t *s) {
   coro_t *yielded_coro = s->curr_coro;
 
   s->curr_coro = NULL;
-  _coro_scheduler_queue_coro(s, yielded_coro, CORO_STATE_SUSPEND);
+  _coro_scheduler_suspend_coro(s, yielded_coro);
 
   _coro_switch_to_scheduler_from(s, yielded_coro);
 }
 
-// _coro_scheduler_executor is the wrapper of ex, it manages the lifespan of ex
+// _coro_scheduler_delay is the real delay(), it delays current coro and then
+// switches context to scheduler
+static
+void _coro_scheduler_delay(coro_scheduler_t *s, long long time) {
+  coro_t *delayed_coro = s->curr_coro;
+
+  s->curr_coro = NULL;
+
+  // construct a delayed coro
+  coro_delayed_t d = { delayed_coro, 0, 0 };
+
+  // get current time
+  struct timeval tv;
+  int ret = gettimeofday(&tv, NULL);
+  if (ret != 0) { assert(0); }
+
+  d.begin_at = tv.tv_sec * 1000;
+  // negative means freeze it
+  d.end_at = time < 0 ? -1 : (d.begin_at + time);
+
+  // add c to delayed coros and change its state
+  list_append(&s->delayed_coros, d);
+  delayed_coro->state = CORO_STATE_DELAYED;
+
+  _coro_switch_to_scheduler_from(s, delayed_coro);
+}
+
+// _coro_scheduler_undelay will make coroutine referenced by cid suspended
+static
+void _coro_scheduler_undelay(coro_scheduler_t *s, coro_id_t cid) {
+  coro_t *c   = NULL;
+  int     idx = 0;
+
+  list_coro_delayed_node_t *n;
+  list_foreach_n(&s->delayed_coros, n) {
+    // find it, unfreeze it, and suspend it
+    if (cid == list_node_data(n).c->id) {
+      c = list_node_data(n).c;
+      list_remove(&s->delayed_coros, idx);
+      // undelayed ones have greater priority to other suspended ones
+      c->state = CORO_STATE_SUSPENDED;
+      list_prepend(&s->suspended_coros, c);
+      break;
+    }
+    idx ++;
+  }
+}
+
+// _coro_scheduler_freeze will make current coroutine delays forever
 static inline
+void _coro_scheduler_freeze(coro_scheduler_t *s) {
+  _coro_scheduler_delay(s, -1);
+}
+
+// _coro_scheduler_unfreeze will make coroutine referenced by cid be unfrozen
+static inline
+void _coro_scheduler_unfreeze(coro_scheduler_t *s, coro_id_t cid) {
+  _coro_scheduler_undelay(s, cid);
+}
+
+// _coro_scheduler_next determines which coro will be executed next
+static
+coro_t* _coro_scheduler_next(coro_scheduler_t *s) {
+  assert(NULL != s);
+
+  coro_t *c          = NULL;
+  int     nr_delayed = list_size(&s->delayed_coros);
+
+  // 1. we make a priority to delayed coroutines, find one which 
+  //    firstly completes delayed task
+  if (nr_delayed > 0) {
+    // get current time
+    struct timeval tv;
+    int ret = gettimeofday(&tv, 0);
+    if (ret != 0) { assert(0); } // error
+    
+    long long  exceeded_tm     = 0;
+    long long  min_exceeded_tm = (((unsigned long long)-1) >> 1);
+    long long  now             = tv.tv_sec * 1000;
+
+    // we allocate nr_delay memories
+    coro_id_t *exceeded_coro_ids  = (int*)calloc(nr_delayed, sizeof(coro_id_t));
+    int  nr_exceeded              = 0;
+    if (NULL == exceeded_coro_ids) { assert(0); }
+
+    // 1.1 traverse, find and save exceeded ones and c
+    list_coro_delayed_node_t *n;
+    list_foreach_n(&s->delayed_coros, n) {
+      // those which freeze
+      if (list_node_data(n).end_at < 0) { continue; }
+
+      // those which delay
+      exceeded_tm = now - list_node_data(n).end_at;
+      // delayed done
+      if (exceeded_tm >= 0) {
+        exceeded_coro_ids[nr_exceeded ++] = list_node_data(n).c->id;
+        if (min_exceeded_tm > exceeded_tm) {
+          min_exceeded_tm = exceeded_tm;
+          c = list_node_data(n).c;
+        }
+      }
+    }
+
+    if (nr_exceeded > 0) {
+      assert(NULL != c);
+
+      // first undelay !c
+      for (int i = 0; i < nr_exceeded; i ++) {
+        if (exceeded_coro_ids[i] == c->id) { continue; }
+        _coro_scheduler_undelay(s, exceeded_coro_ids[i]);
+      }
+
+      // then undelay c, and c will be the first suspended one
+      _coro_scheduler_undelay(s, c->id);    
+    } else {
+      assert(NULL == c);
+    }
+
+    free(exceeded_coro_ids);
+  }
+
+  // 2. no delayed coroutines is ready, we pick a suspended one according to FCFS
+  //    if we find one in 1(above), it will be the 1st one of suspended coros
+  if (0 == list_size(&s->suspended_coros)) { return NULL; }
+
+  // remove c from suspended coros
+  c = list_node_data(list_head(&s->suspended_coros));
+  assert(NULL != c);
+  list_remove(&s->suspended_coros, 0);
+
+  return c;
+}
+
+// _coro_scheduler_executor is the wrapper of ex, it manages the lifespan of ex
+static
 void _coro_scheduler_executor(uint32_t ps_l32, uint32_t ps_h32) {
   uintptr_t ps = ps_l32 | (uintptr_t)ps_h32 << 32;
   coro_scheduler_t *s = (coro_scheduler_t*)ps;
@@ -254,7 +392,8 @@ void coro_scheduler_init(coro_scheduler_t *s) {
   assert(NULL != s);
   s->idgen     = 0;
   s->curr_coro = NULL;
-  list_init(&s->coro_queue);
+  list_init(&s->suspended_coros);
+  list_init(&s->delayed_coros);
   pool_init(&s->coro_pool, CORO_DEFAULT_NR_CORO);
 }
 
@@ -269,19 +408,22 @@ void coro_scheduler_run(coro_scheduler_t *s) {
     // every schedule must be scheduled by scheduler
     assert(NULL == s->curr_coro);
 
-    coro_t *c = _coro_scheduler_pick_coro(s);
+    coro_t *c = _coro_scheduler_next(s);
 
-    // no coro is in the queue, exit the program
-    if (NULL == c) { break; }
+    // no coro is suspended, but there are delayed
+    if (NULL == c && _coro_scheduler_has_delayed_coros(s)) { continue; }
+    // no more coros, exit the program
+    else if(NULL == c) { break; }
 
     switch (c->state) {
       case CORO_STATE_READY:
-      case CORO_STATE_SUSPEND:
+      case CORO_STATE_SUSPENDED:
         _coro_scheduler_serve_coro(s, c);
         break;
 
-      case CORO_STATE_ACTIVE: 
-      case CORO_STATE_ZOMBIE: 
+      case CORO_STATE_ACTIVE:
+      case CORO_STATE_DELAYED:
+      case CORO_STATE_ZOMBIE:
       case CORO_STATE_DEAD:
         /* cannot be these */
         assert(0);
@@ -300,7 +442,8 @@ void coro_scheduler_run(coro_scheduler_t *s) {
  */
 void coro_scheduler_deinit(coro_scheduler_t *s) {
   if (NULL == s) { return; }
-  list_deinit(&s->coro_queue);
+  list_deinit(&s->suspended_coros);
+  list_deinit(&s->delayed_coros);
   pool_deinit(&s->coro_pool);
   s->curr_coro = NULL;
   s->idgen     = 0;
@@ -329,11 +472,34 @@ void yield() {
 }
 
 /**
+ * delay makes coroutine delay executing for at least time ms
+ * @param time sleeping time(millisecond)
+ */
+void delay(long long time) {
+  if (0 >= time) { yield(); }
+  else { _coro_scheduler_delay(coro_global_scheduler(), time); }
+}
+
+/**
  * self returns id of this coroutine
  * @return id of this coroutine
  */
 coro_id_t self() {
   return coro_global_scheduler()->curr_coro->id;
+}
+
+/**
+ * freeze will make current coroutine delays forever
+ */
+void freeze() {
+  _coro_scheduler_freeze(coro_global_scheduler());
+}
+
+/**
+ * unfreeze will make coroutine referenced by cid be unfrozen
+ */
+void unfreeze(coro_id_t cid) {
+  _coro_scheduler_unfreeze(coro_global_scheduler(), cid);
 }
 
 /*----------------------------------------------------------------------------
@@ -399,9 +565,8 @@ coro_msg_t receive(long long timeout) {
 
   // block until time out or a message is available
   struct timeval  tv;
-  struct timezone tz;
 
-  int ret    = gettimeofday(&tv, &tz);
+  int ret = gettimeofday(&tv, NULL);
   if (ret != 0) { return m; } // error
 
   long long t_from      = tv.tv_sec * 1000;
@@ -415,7 +580,7 @@ coro_msg_t receive(long long timeout) {
       return m;
     }
 
-    ret = gettimeofday(&tv, &tz);
+    ret = gettimeofday(&tv, NULL);
     if (ret != 0) { return m; } // error
 
     t_duration = tv.tv_sec * 1000 - t_from;

@@ -38,6 +38,12 @@ coro_id_t coro(coro_ex_t ex, void *args);
 void yield();
 
 /**
+ * delay makes coroutine delay executing for at least time ms
+ * @param time sleeping time(millisecond), negative or 0 means yield
+ */
+void delay(long long time);
+
+/**
  * self returns id of this coroutine
  * @return id of this coroutine
  */
