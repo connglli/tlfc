@@ -9,6 +9,7 @@ This lib includes some data structures as well as some easy but often used funct
 + [x] [dynamic array - array](https://github.com/Leetsong/tlfc/tree/master/array)
 + [x] [linked list   - list](https://github.com/Leetsong/tlfc/tree/master/list)
 + [x] [pool          - pool](https://github.com/Leetsong/tlfc/tree/master/pool)
++ [x] [hash          - hash](https://github.com/Leetsong/tlfc/tree/master/hash)
 + [ ] [hash map      - map]()
 + [x] [bitmap        - bitmap](https://github.com/Leetsong/tlfc/tree/master/bitmap)
 + [x] [coroutine     - coro](https://github.com/Leetsong/tlfc/tree/master/coro)
@@ -40,3 +41,4 @@ You can check source code of coro, it uses pool and list.
 + [clibs/list](https://github.com/clibs/list)
 + [petewarden/c_hashmap](https://github.com/petewarden/c_hashmap)
 + [libtask](https://swtch.com/libtask/)
++ [字符串Hash函数评估](http://blog.csdn.net/liuaigui/article/details/5050697)
