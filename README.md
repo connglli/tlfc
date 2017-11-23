@@ -12,6 +12,7 @@ This lib includes some data structures as well as some easy but often used funct
 + [x] [hash          - hash](https://github.com/Leetsong/tlfc/tree/master/hash)
 + [ ] [hash map      - map]()
 + [x] [bitmap        - bitmap](https://github.com/Leetsong/tlfc/tree/master/bitmap)
++ [x] [bloom filter  - bloom_filter](https://github.com/Leetsong/tlfc/tree/master/bloom-filter)
 + [x] [coroutine     - coro](https://github.com/Leetsong/tlfc/tree/master/coro)
 + [x] [string utils  - strutil](https://github.com/Leetsong/tlfc/tree/master/strutil)
 + [x] [logger utils  - logger](https://github.com/Leetsong/tlfc/tree/master/logger)
