@@ -18,7 +18,7 @@ int main() {
 
   int count = (int)((double)rand() / RAND_MAX * BM_SIZE);
   for (int i = 0; i < count; i ++) {
-    int idx = (int)(rand() * BM_SIZE);
+    int idx = (int)(rand() / RAND_MAX * BM_SIZE);
 
     bitmap_set(&bm, idx);
     assert(bitmap_get(&bm, idx) == 1);
