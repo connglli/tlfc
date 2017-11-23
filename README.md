@@ -10,6 +10,7 @@ This lib includes some data structures as well as some easy but often used funct
 + [x] [linked list   - list](https://github.com/Leetsong/tlfc/tree/master/list)
 + [x] [pool          - pool](https://github.com/Leetsong/tlfc/tree/master/pool)
 + [ ] [hash map      - map]()
++ [x] [bitmap        - bitmap](https://github.com/Leetsong/tlfc/tree/master/bitmap)
 + [x] [coroutine     - coro](https://github.com/Leetsong/tlfc/tree/master/coro)
 + [x] [string utils  - strutil](https://github.com/Leetsong/tlfc/tree/master/strutil)
 + [x] [logger utils  - logger](https://github.com/Leetsong/tlfc/tree/master/logger)
