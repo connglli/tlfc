@@ -7,6 +7,8 @@
 #define NEW_BM_SIZE BM_SIZE * 2
 
 int main() {
+  srand(time(NULL));
+
   bitmap_t bm = make_bitmap(BM_SIZE);
   assert(bitmap_size(&bm) == BM_SIZE);
 
@@ -15,7 +17,6 @@ int main() {
   }
 
   int count = (int)((double)rand() / RAND_MAX * BM_SIZE);
-  srand(time(NULL));
   for (int i = 0; i < count; i ++) {
     int idx = (int)(rand() * BM_SIZE);
 
