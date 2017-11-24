@@ -15,12 +15,12 @@
 #define list_template(T, list_t, list_node_t)                                  \
   typedef struct list_node_t list_node_t;                                      \
   typedef struct list_t      list_t;                                           \
-  /* list type, we name it list_t in the folowing */                           \
+  /* list node type, we name it list_node_t in the folowing */                 \
   struct list_node_t {                                                         \
     list_node_t *prev, *next;                                                  \
     T            data;                                                         \
   };                                                                           \
-  /* list node type, we name it list_t in the folowing */                      \
+  /* list type, we name it list_t in the folowing */                           \
   struct list_t {                                                              \
     list_node_t *head;                                                         \
     list_node_t *tail;                                                         \
@@ -94,7 +94,7 @@
   ( (void**)(n) )
 
 /**
- * _list_node_unsafe_nextp gets next(of type void*) from n(usually void*)
+ * _list_node_unsafe_nextp gets ptr to next(of type void*) from n(usually void*)
  * @param  n ptr to a list_node_t
  * @return   ptr to next of n, of type void**
  */
@@ -102,7 +102,7 @@
   ( (void**)((void*)(n) + sizeof(void*)) )
 
 /**
- * _list_node_unsafe_datap gets data(of type void*) from n(usually void*)
+ * _list_node_unsafe_datap gets ptr to data(of type void*) from n(usually void*)
  * @param  n ptr to a list_node_t
  * @return   ptr to data of n, of type void*
  */
