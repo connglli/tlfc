@@ -1,6 +1,6 @@
 # tlfc - tiny library for c
 
-This is a tiny lib for c, implemented easily.
+This is a tiny lib for c, implemented easily, which you can ***care nothing about type casting***.
 
 ## content
 
