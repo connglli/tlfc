@@ -18,7 +18,7 @@ int main() {
 
   int count = (int)((double)rand() / RAND_MAX * BM_SIZE);
   for (int i = 0; i < count; i ++) {
-    int idx = (int)(rand() * BM_SIZE);
+    int idx = (int)(rand() / RAND_MAX * BM_SIZE);
 
     bitmap_set(&bm, idx);
     assert(bitmap_get(&bm, idx) == 1);
@@ -26,6 +26,7 @@ int main() {
     bitmap_clear(&bm, idx);
     assert(bitmap_get(&bm, idx) == 0);
   }
+
 
   for (int i = 0; i < count; i ++) {
     bitmap_set(&bm, i);
@@ -41,6 +42,16 @@ int main() {
     } else {
       assert(bitmap_get(&bm, i) == 0);
     }
+  }
+
+  for (int i = 0; i < NEW_BM_SIZE; i ++) {
+      bitmap_set(&bm, i);
+  }
+
+  int nr_containers = 
+    ceil((double)(bitmap_size(&bm) / BITMAP_NR_BITS_PER_CONTAINER));
+  for (int i = 0; i < nr_containers - 1; i ++) {
+    assert((bitmap_container_t)-1 == bm.containers[i]);
   }
 
   bitmap_deinit(&bm);

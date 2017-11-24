@@ -4,10 +4,32 @@
 #include <stdint.h>
 #include <assert.h>
 
+#define __cat3(a, b, c) a##b##c
+
+/**
+ * BITMAP_NR_BITS_PER_CONTAINER defines number bits of one container
+ */
+#define BITMAP_NR_BITS_PER_CONTAINER 64
+
+/**
+ * [BITMAP_CONTAINER_TYPE uses x to define a bitmap_container_t
+ * @param  x number bits of one container
+ * @return   
+ */
+#define BITMAP_CONTAINER_TYPE(x) __cat3(uint, x, _t)
+
+/**
+ * BITMAP_GET_NR_CONTAINER gets number of containers via number of bits
+ * @param  size number of bits
+ * @return      number of container
+ */
+#define BITMAP_GET_NR_CONTAINER(size)                                          \
+  ceil((double)(size) / BITMAP_NR_BITS_PER_CONTAINER)
+
 /**
  * bitmap_container_t represents a bitmap container
  */
-typedef uint64_t bitmap_container_t;
+typedef BITMAP_CONTAINER_TYPE(BITMAP_NR_BITS_PER_CONTAINER) bitmap_container_t;
 
 /**
  * bitmap_t represents a bitmap
