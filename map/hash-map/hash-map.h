@@ -89,6 +89,22 @@
   ( (void*)((void*)(e) + 3 * sizeof(void*)) )
 
 /**
+ * hash_map_entry_key gets key of a hash_map_entry_t
+ * @param  e ptr to a hash_map_entry_t
+ * @return   key of a e
+ */
+#define hash_map_entry_key(e) \
+  ( (e)->key )
+
+/**
+ * hash_map_entry_value gets value of a hash_map_entry_t
+ * @param  e ptr to a hash_map_entry_t
+ * @return   value of a e
+ */
+#define hash_map_entry_value(e) \
+  ( (e)->value )
+
+/**
  * hash_map_init initializes a hash_map_t
  * @param  hm ptr to a hash_map_t
  */
@@ -124,6 +140,22 @@
  */
 #define hash_map_load_factor(hm)                                               \
   ( (double)(hm)->size / HASH_MAP_DEFAULT_NR_BUCKETS )
+
+/**
+ * hash_map_hash returns hash function of a hash_map_t
+ * @param  hm ptr to a hash_map_t
+ * @return    hash function of hm
+ */
+#define hash_map_hash(hm) \
+  ( (hm)->hash )
+
+/**
+ * hash_map_set_hash sets hash function of a hash_map_t
+ * @param  hm ptr to a hash_map_t
+ * @param  hf hash function to be set
+ */
+#define hash_map_set_hash(hm, hf) \
+  do { (hm)->hash = (hf); } while(0)
 
 /**
  * hash_map_contain checks whether a hash_map_t contains k

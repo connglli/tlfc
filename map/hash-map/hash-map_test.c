@@ -41,8 +41,8 @@ int main() {
 
   test_hash_map_entry_t* e;
   hash_map_foreach_e(&hm, e) {
-    int k; sscanf(e->key, "%d", &k);
-    assert(fabs((double)k / 100 - e->value.value) < 1e-6);
+    int k; sscanf(hash_map_entry_key(e), "%d", &k);
+    assert(fabs((double)k / 100 - hash_map_entry_value(e).value) < 1e-6);
   }
 
   for (int i = 0; i < 100; i ++) {
