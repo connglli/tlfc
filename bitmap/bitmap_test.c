@@ -27,6 +27,7 @@ int main() {
     assert(bitmap_get(&bm, idx) == 0);
   }
 
+
   for (int i = 0; i < count; i ++) {
     bitmap_set(&bm, i);
     assert(bitmap_get(&bm, i) == 1);
@@ -41,6 +42,16 @@ int main() {
     } else {
       assert(bitmap_get(&bm, i) == 0);
     }
+  }
+
+  for (int i = 0; i < NEW_BM_SIZE; i ++) {
+      bitmap_set(&bm, i);
+  }
+
+  int nr_containers = 
+    ceil((double)(bitmap_size(&bm) / BITMAP_NR_BITS_PER_CONTAINER));
+  for (int i = 0; i < nr_containers - 1; i ++) {
+    assert((bitmap_container_t)-1 == bm.containers[i]);
   }
 
   bitmap_deinit(&bm);

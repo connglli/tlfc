@@ -15,12 +15,12 @@
 #define list_template(T, list_t, list_node_t)                                  \
   typedef struct list_node_t list_node_t;                                      \
   typedef struct list_t      list_t;                                           \
-  /* list type, we name it list_t in the folowing */                           \
+  /* list node type, we name it list_node_t in the folowing */                 \
   struct list_node_t {                                                         \
     list_node_t *prev, *next;                                                  \
     T            data;                                                         \
   };                                                                           \
-  /* list node type, we name it list_t in the folowing */                      \
+  /* list type, we name it list_t in the folowing */                           \
   struct list_t {                                                              \
     list_node_t *head;                                                         \
     list_node_t *tail;                                                         \
@@ -210,6 +210,40 @@
     if (!list_is_index_valid((l), (idx))) { assert(0); }                       \
     list_remove((l), (idx));                                                   \
     list_insertn((l), (idx), (n));                                             \
+  } while(0)
+
+/**
+ * list_get gets the idx-th item
+ * @param  l   ptr to an list_t
+ * @param  idx index to be queried, must be valid
+ * @param  x   place to put the idx-th item, must be of type T*
+ */
+#define list_get(l, idx, x)                                                    \
+  do {                                                                         \
+    if (!list_is_index_valid((l), (idx))) { assert(0); }                       \
+    void *p = (void*)(l)->head;                                                \
+    for(                                                                       \
+      int _i_d_x = 0;                                                          \
+      _i_d_x != (idx);                                                         \
+      _i_d_x ++, p = *_list_node_unsafe_nextp(p));                             \
+    memcpy((x), _list_node_unsafe_datap(p), sizeof(*x));                  \
+  } while(0)
+
+/**
+ * list_getp gets pointer the idx-th item
+ * @param  l   ptr to an list_t
+ * @param  idx index to be queried, must be valid
+ * @param  x   place to put ptr to the idx-th item, must be of type T**
+ */
+#define list_getp(l, idx, x)                                                   \
+  do {                                                                         \
+    if (!list_is_index_valid((l), (idx))) { assert(0); }                       \
+    void *p = (void*)(l)->head;                                                \
+    for(                                                                       \
+      int _i_d_x = 0;                                                          \
+      _i_d_x != (idx);                                                         \
+      _i_d_x ++, p = *_list_node_unsafe_nextp(p));                             \
+    *((void**)x) = _list_node_unsafe_datap(p);                                         \
   } while(0)
 
 /**

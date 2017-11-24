@@ -4,13 +4,6 @@
 #include <assert.h>
 #include "bitmap.h"
 
-// BITMAP_CONTAINER_SIZE is the size of bitmap_container_t
-#define BITMAP_CONTAINER_SIZE sizeof(bitmap_container_t)
-
-// BITMAP_GET_NR_CONTAINER gets number of containers via number of bits
-#define BITMAP_GET_NR_CONTAINER(size)                                          \
-  ceil((double)(size) / BITMAP_CONTAINER_SIZE)
-
 // BITMAP_GET_BIT_INFO gets idx-th bit info of bm to (d, r)
 // bm  bm  ptr to a bitmap_t
 // idx index to be queried
@@ -19,8 +12,8 @@
 #define BITMAP_GET_BIT_INFO(bm, idx, d, r)                                     \
  do {                                                                          \
   (idx) = bitmap_safe_index((bm), (idx));                                      \
-  (d)   = (idx) / BITMAP_CONTAINER_SIZE;                                       \
-  (r)   = (idx) % BITMAP_CONTAINER_SIZE;                                       \
+  (d)   = (idx) / BITMAP_NR_BITS_PER_CONTAINER;                                \
+  (r)   = (idx) % BITMAP_NR_BITS_PER_CONTAINER;                                \
 } while(0)
 
 /**
@@ -41,9 +34,9 @@ bitmap_t make_bitmap(int size) {
  */
 void bitmap_init(bitmap_t *bm, int size) {
   int nr_container = BITMAP_GET_NR_CONTAINER(size);
-  bm->containers = malloc(nr_container * BITMAP_CONTAINER_SIZE);
+  bm->containers = malloc(nr_container * sizeof(bitmap_container_t));
   if (NULL == bm->containers) { assert(0); }
-  memset(bm->containers, 0, nr_container * BITMAP_CONTAINER_SIZE);
+  memset(bm->containers, 0, nr_container * sizeof(bitmap_container_t));
   bm->size = size;
 }
 
@@ -99,11 +92,11 @@ int bitmap_expand_to_cap(bitmap_t *bm, int cap) {
   }
 
   bitmap_container_t *p = realloc(bm->containers,
-                                  nr_container * BITMAP_CONTAINER_SIZE);
+                                  nr_container * sizeof(bitmap_container_t));
   if (NULL == p) { return -1; }
   memset(p + (nr_container - old_nr_container),
          0,
-         (nr_container - old_nr_container) * BITMAP_CONTAINER_SIZE);
+         (nr_container - old_nr_container) * sizeof(bitmap_container_t));
   bm->containers = p;
   bm->size       = cap;
 

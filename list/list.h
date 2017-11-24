@@ -15,12 +15,12 @@
 #define list_template(T, list_t, list_node_t)                                  \
   typedef struct list_node_t list_node_t;                                      \
   typedef struct list_t      list_t;                                           \
-  /* list type, we name it list_t in the folowing */                           \
+  /* list node type, we name it list_node_t in the folowing */                 \
   struct list_node_t {                                                         \
     list_node_t *prev, *next;                                                  \
     T            data;                                                         \
   };                                                                           \
-  /* list node type, we name it list_t in the folowing */                      \
+  /* list type, we name it list_t in the folowing */                           \
   struct list_t {                                                              \
     list_node_t *head;                                                         \
     list_node_t *tail;                                                         \
