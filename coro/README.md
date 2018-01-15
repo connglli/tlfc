@@ -344,7 +344,7 @@ make fibonacci && ./fibonacci
 
 ### 2.3 Lifecycle
 
-![lifecycle](/Users/apple/Desktop/lifecycle.png)
+![lifecycle](./.github/lifecycle.png)
 
 Like the figure shows, there are 6 different state for a coroutine:
 
