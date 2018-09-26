@@ -319,3 +319,63 @@ char* strnjoin(char** tokens, size_t n, const char* delim) {
 
   return joined_s;
 }
+
+/**
+ * stridx finds the first occurring index of p in t. It is implemented via KMP.
+ * @param  t the main string
+ * @param  p the pattern string
+ * @return   the first occurring index of p in t, or -1
+ */
+int stridx(const char* t, const char* p) {
+  if (NULL == t || NULL == p) { return -1; }
+
+  const int lp = (const int)strlen(p);
+  const int lt = (const int)strlen(t);
+  if (lp > lt) {
+    return -1;
+  } else if (lp == lt) {
+    return strncmp(p, t, lp) == 0 ? 0 : -1;
+  }
+
+  // define a next array, size of p
+  int* next = (int*)malloc(lp * sizeof(int));
+  if (NULL == next) {
+    return -2;
+  }
+
+  // fill the next array
+  int k = -1;
+  int i, j = 0;
+  next[j] = k;
+  while (j < lp) {
+    if (k == -1 || p[j] == p[k]) {
+      if (p[++ j] == p[++ k]) {
+        next[j] = next[k];
+      } else {
+        next[j] = k;
+      }
+    } else {
+      k = next[k];
+    }
+  }
+
+  // find the first index
+  i = j = 0;
+  while (i < lt && j < lp) {
+    if (j == -1 || t[i] == p[j]) {
+      i ++; j ++;
+    } else {
+      j = next[j];
+    }
+  }
+
+  // free next
+  free(next);
+
+  if (j == lp) {
+    // find it
+    return i - j;
+  } else {
+    return -1;
+  }
+}

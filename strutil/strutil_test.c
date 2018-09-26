@@ -10,6 +10,21 @@ int main() {
   char c[11] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '\0' };
   char* d = "12\n";
 
+  assert(-1 == stridx(s, NULL));
+  assert(-1 == stridx(NULL, NULL));
+  assert(-1 == stridx(NULL, ""));
+  assert(-1 == stridx(s, "1"));
+  assert(-1 == stridx(s, "123"));
+  // printf("learn: %d\n", stridx(s, "learn"));
+  assert(15 == stridx(s, "learn"));
+  assert(30 == stridx(s, "Math"));
+  assert(0 == stridx(s, " "));
+  assert(1 == stridx(s, "\t\n"));
+  assert(-1 == stridx(s, "Well"));
+  assert(-1 == stridx(s, "Well\n"));
+  assert(44 == stridx(s, "well"));
+  assert(44 == stridx(s, "well\n"));
+
   char* dup_s  = strdup(s);
   char* dup_a  = strdup(a);
   char* dup_sl = strdup(s);
